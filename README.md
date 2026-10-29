@@ -2,7 +2,7 @@
 
 A plug-and-play account management toolkit written in Go. Drop in authentication, user profiles, roles, sessions, and admin tools, then self-host or customize it to fit your product. Open source, dependency-light, and built to be forked, so you own your user data instead of renting it.
 
-> **Status: early planning.** The design is in [PLAN.md](PLAN.md). Nothing below is released yet, and the API sketches are targets, not promises.
+> **Status: early planning.** What we build first is in [SCOPE.md](SCOPE.md). The design is in [PLAN.md](PLAN.md). Nothing below is released yet, and the API sketches are targets, not promises.
 
 ## The core offer: sign up once
 
