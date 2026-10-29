@@ -94,9 +94,12 @@ Because SMS is the real cost on every platform, the per-app SMS cap and country 
 
 **To verify before building:** Supabase's current free-project count, which SMS provider its phone auth needs and who pays, and how idle-pausing affects a live app.
 
-### Decision 5 (proposed, awaiting owner): packet-first, tiered accounts
+### Decision 5 (owner: packet-only is the base): packet-first, tiered accounts
 
-Research in [RESEARCH.md](RESEARCH.md) found no engine that makes phone-first free, and that `payout-lab` already proves a lighter model: **the account is a file the user owns**. Proposal: three tiers per app: **0** packet only ($0, no server), **1** packet plus a tiny phone/email verification service, **2** hosted account (Better Auth or similar). Hosted engines stay behind the `AuthEngine` interface. This may also change the implementation language from Go to JavaScript/TypeScript, which is Decision 6, pending the owner's answer.
+Research in [RESEARCH.md](RESEARCH.md) found no engine that makes phone-first free, and that `payout-lab` already proves a lighter model: **the account is a file the user owns**. Proposal: three tiers per app: **0** packet only ($0, no server), **1** packet plus a tiny phone/email verification service, **2** hosted account (Better Auth or similar). Hosted engines stay behind the `AuthEngine` interface. 
+**Decision 6 (owner): Go stays** as the implementation language. Go owns the verification service and server-side packet validation, with the packet format ported from payout-lab's spec.
+
+**Decision 7 (proposed): the free verification ladder.** Confirm by the cheapest method the user already has: verify later, Google, email (user-sent or magic link), Telegram contact share, WhatsApp (user-initiated), and paid SMS only as a capped fallback that is off on free plans. After any success the server signs an attestation, and a passkey avoids repeat codes. Details, checked facts and open risks: [RESEARCH.md](RESEARCH.md) section 6.
 
 ## Quotas: the free-tier feature
 

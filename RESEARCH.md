@@ -77,3 +77,45 @@ Why it fits each stated goal:
 2. **Which of your apps are Tier 0, 1 and 2?** Utility apps look like Tier 0, legal like Tier 0 or 1 plus offline grants, dating like Tier 2.
 3. **Reuse from payout-lab:** is it OK to lift its packet core into this project as a shared library? Both are MPL-2.0.
 4. **Encryption first?** I'd make passkey-unlocked encryption a requirement before any private data goes into a packet.
+
+## 6. Free confirmation: the verification ladder (owner request)
+
+Goal: let users confirm by email or cell phone **for free**, plus Google login, with Go as the implementation language and packet-first accounts as the base.
+
+### Honest starting point
+
+There is no free *outbound* SMS. Carriers and providers charge for every code you send. So the unique approach is not a free SMS trick. It is to **avoid sending** wherever possible, in this order.
+
+### Checked and ruled out
+
+- **Carrier email-to-text gateways** (`number@txt.att.net` and similar). Reported shut down or unreliable: [AT&T ended its gateway on 2025-06-17](https://www.alarmgrid.com/blog/cell-carriers-are-shutting-down-email-to-text-capability), T-Mobile reportedly stopped in late 2024, and Verizon is [phasing out vtext.com by March 2027](https://www.smseagle.eu/2025/05/08/no-support-for-email-to-text-from-att-verizon-and-t-mobile-what-are-your-alternatives/). Most sources are vendors selling alternatives, so treat the detail with caution, but do not build on this.
+
+### The ladder (cheapest first; the app offers what the user already has)
+
+| Rung | How it confirms | Cost to us | Honest limits |
+|---|---|---|---|
+| **0. Verify later (lazy)** | A packet works with no confirmation. Ask only when the user first needs recovery, sync, or a paid feature | $0 | Unconfirmed packets can't be recovered if lost |
+| **1. Google sign-in** | Google ID token gives a verified email | Free (verify Google's terms) | Email only, no phone. Needs a Google account. Keep it detachable so Google can't lock users out |
+| **2. Email, user-sent ("reverse")** | The user taps a `mailto:` link that pre-fills an email with a one-time code to `verify@yourapp`. We receive it. **We send nothing** | $0 if inbound mail is free. [Cloudflare Email Routing/Workers](https://developers.cloudflare.com/email-service/platform/limits/) can forward inbound mail to a webhook. Its free-tier limits need checking | **Must check SPF/DKIM/DMARC results on the inbound mail**, or anyone can spoof a From address. More friction than clicking a link, and some desktop users have no mail client. Offer classic outbound magic link as the fallback |
+| **2b. Email, classic magic link** | We email a link | Free-tier email providers allow a limited number of sends per day (verify current limits) | Deliverability work (SPF/DKIM) on our side |
+| **3. Telegram contact share** | A Telegram bot shows a "share my number" button (`request_contact`). Telegram returns the user's own number. We check `contact.user_id == sender id` so users can't submit someone else's number | Bot API is [reported free](https://docs.python-telegram-bot.org/en/v20.8/telegram.keyboardbutton.html); not confirmed in the sources found | Only for Telegram users. Trusts Telegram's own verification of the number (a trust decision to document) |
+| **4. WhatsApp, user-initiated** | The user messages our business number first, and replies inside 24 hours are [reported free](https://chatdaddy.tech/blog/whatsapp-api-pricing-guide) | Reported free for user-initiated service messages, but one source claims [pricing changes in October 2026](https://help.zoho.com/portal/es/community/topic/whatsapp-business-platform-message-pricing-guide). Unresolved. Needs a Meta business account | Setup effort, and the policy could change under us |
+| **5. SMS code (paid fallback)** | We send a code | Per-message cost, varies by country | **Off by default on free plans.** Hard per-app caps, a country allow-list, and a fraud guard |
+
+Not recommended: **user-sent SMS to our number** as a free method. It still needs a paid number, and sender numbers on inbound texts can be spoofed, which would let an attacker "verify" someone else's phone.
+
+### Rules that keep it cheap and safe
+
+1. **Verify once, attest forever.** After any rung succeeds, the server signs a short attestation: "this packet key is bound to a verified phone/email, for app X." The attestation holds a keyed hash with an app-specific secret and **not the number or address itself**, so nothing links the same person across apps. The packet carries it. No re-verification unless the user is recovering.
+2. **Passkey after first confirmation.** Later logins use the device passkey, so no codes are sent. Fewer sends is the real saving.
+3. **The app chooses which rungs to show,** and the free plan hides rung 5.
+4. **One rung is never a lock.** A user can add a second rung later. Losing one method never loses the account.
+5. **Rate limits on everything,** per number, per address, per IP, per app.
+
+### Go implementation notes (verify each library's license and maintenance first)
+
+- HTTP, JSON, crypto, and the Telegram Bot API need only the standard library.
+- Inbound mail can arrive as a webhook from an email worker, or be received directly with an SMTP server library such as [emersion/go-smtp](https://github.com/emersion/go-smtp).
+- Google ID tokens can be verified with Google's published signing keys and a JWT check.
+- Passkeys: [go-webauthn](https://github.com/go-webauthn/webauthn).
+- **Packets in the browser:** `payout-lab` is JavaScript. The Go side owns the verification service and server-side packet validation, ported from [`docs/packet-format.md`](https://github.com/Sukonik/payout-lab/blob/main/docs/packet-format.md). A browser reader can start as a tiny JS file following the same spec. Compiling the Go packet code to WebAssembly is an option later, at the cost of a larger download.
