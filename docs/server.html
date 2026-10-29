@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Confirmation server · GoldAccountManager</title>
+<meta name="description" content="The small server that emails a confirmation link and signs an attestation for the user&#39;s packet: how it works, its API, and what it deliberately does not do.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/blue-bolt.css">
+<script src="assets/blue-bolt.js"></script>
+</head>
+<body>
+<a class="bb-skip" href="#main">Skip to content</a>
+<header class="bb-header">
+  <div class="bb-container bb-header__in">
+    <a class="bb-brand" href="index.html">
+      <span class="bb-brand__mark" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 32 32"><path d="M18.5 4 8 18h7l-1.5 10L24 14h-7z" fill="currentColor"/></svg></span>
+      GoldAccountManager
+    </a>
+    <nav class="bb-nav" aria-label="Main">
+      <a href="index.html">Home</a>
+      <a href="try.html">Try it</a>
+      <a href="packets.html">Packets</a>
+      <a href="verification.html">Verification</a>
+      <a href="server.html" aria-current="page">Server</a>
+      <a href="history.html">History</a>
+      <a href="blue-bolt.html">Blue Bolt UI</a>
+      <a href="roadmap.html">Roadmap</a>
+      
+    </nav>
+    <button type="button" class="bb-theme" data-bb-theme-toggle>Theme: auto</button>
+  </div>
+</header>
+<main id="main">
+  <div class="bb-container">
+
+<h1>Confirmation server</h1>
+<p class="bb-lead bb-muted">The one piece of server in a Tier 1 app. It confirms an email address once and signs a short statement that the user keeps in their packet.</p>
+
+<div class="bb-notice bb-notice--warn">
+  <strong>First slice of Phase 1</strong>
+  <p>Email links only. State is held in memory, so run one instance, and a restart forgets unfinished confirmations <em>and app quotas</em>. See <a href="#limits">known limits</a>.</p>
+</div>
+
+<h2>How a confirmation works</h2>
+<ol>
+  <li><strong>Start.</strong> The app sends the address and the packet id. The server emails a link and returns a challenge id and a secret <em>pickup</em> value that only the caller has.</li>
+  <li><strong>Open the link.</strong> The user sees a page with a <strong>Confirm</strong> button. Opening the link changes nothing, because email scanners and link previews open every link in a message.</li>
+  <li><strong>Press Confirm.</strong> The server checks the token, applies the app's quota, and signs an attestation for that packet.</li>
+  <li><strong>Pick up.</strong> The app polls with the challenge id and pickup value and receives the attestation <em>once</em>. It goes into the packet, and no more email is needed.</li>
+</ol>
+
+<h2>Try it in two minutes</h2>
+<p>Needs Go 1.24 or newer. The demo uses throwaway keys and prints the email link instead of sending it.</p>
+<pre><code>go run ./cmd/goldd serve -dev
+# in another terminal:
+curl -s -X POST localhost:8080/v1/apps/demo-work/confirm/start \
+  -H 'content-type: application/json' \
+  -d '{"kind":"email","target":"sam@example.com","packetId":"pk_abcdefgh12345"}'
+# open the link printed by the server (or GET /dev/inbox), press Confirm,
+# then call .../confirm/pickup with the challengeId and pickup you got back.</code></pre>
+
+<h2>What it is careful about</h2>
+<div class="bb-scroll"><table>
+<thead><tr><th>Risk</th><th>What the server does</th></tr></thead>
+<tbody>
+<tr><td>Mail scanners confirm for the user</td><td>The link only shows a button. A GET never confirms.</td></tr>
+<tr><td>Someone else intercepts the result</td><td>The attestation is released only to the caller holding the pickup secret, once. Wrong id, wrong secret, other app and expired all give the same <code>404</code>.</td></tr>
+<tr><td>Mail-bombing an address</td><td>5 emails per address per hour and 20 per client per hour, per app.</td></tr>
+<tr><td>Learning who is a member</td><td>The reply to <code>start</code> looks the same for every address. The quota is applied only after the person proves control of the inbox.</td></tr>
+<tr><td>Secrets leaking</td><td>Links and pickup values are stored hashed. Addresses, tokens and pickup values are never logged. The link page sends <code>Referrer-Policy: no-referrer</code>.</td></tr>
+<tr><td>Header injection in email</td><td>Addresses with line breaks or extra recipients are refused before a connection opens. Subjects are encoded.</td></tr>
+<tr><td>Plain-text mail</td><td>SMTP needs STARTTLS unless the server is local, and a failed STARTTLS fails the send instead of downgrading.</td></tr>
+<tr><td>Forged <code>Host</code> or <code>X-Forwarded-For</code></td><td>Links use the configured base address. The forwarded header is ignored unless trusted, and then only its last entry is used.</td></tr>
+<tr><td>Moving an attestation</td><td>The signature covers the app id and packet id, so it fails on another packet or app.</td></tr>
+</tbody></table></div>
+<p>These behaviours are tested, and each test was checked by deliberately breaking the code to confirm it fails. Several early tests passed for the wrong reason and were rewritten.</p>
+
+<h2>Free-tier limits per app</h2>
+<p>Each app has its own secret, so the same address in two apps gives two unrelated subjects. An app can cap how many different addresses it confirms (<code>maxSubjects</code>) and choose to <em>block</em> or <em>waitlist</em> new people after that. People already in a full app are always let back in.</p>
+
+<h2 id="limits">Known limits</h2>
+<ul>
+  <li><strong>In-memory state.</strong> A restart forgets unfinished confirmations and app quotas and waitlists, so an app can exceed its cap after a restart. A durable store comes later.</li>
+  <li><strong>Email only.</strong> Google sign-in, reply-email, Telegram, WhatsApp and SMS are planned, not built.</li>
+  <li><strong>Single instance</strong>, and a per-process fixed-window rate limiter.</li>
+  <li><strong>Build it with the newest Go patch release.</strong> A vulnerability scan finds dozens of standard-library issues in the server's code on older Go releases and none on the latest. The repository pins a patched toolchain, so <code>go build</code> fetches it.</li>
+  <li><strong>Not externally reviewed.</strong></li>
+</ul>
+
+<p>The full reference, with every endpoint, status code and setting, is in <a href="https://github.com/Sukonik/GoldAccountManager/blob/main/docs/server-api.md">docs/server-api.md</a>. How the attestation is checked is on the <a href="verification.html">Verification</a> page.</p>
+
+  </div>
+</main>
+<footer class="bb-footer">
+  <div class="bb-container">
+    <p>GoldAccountManager is open source under the <a href="https://github.com/Sukonik/GoldAccountManager/blob/main/LICENSE">Mozilla Public License 2.0</a>.
+    The UI is <a href="blue-bolt.html">Blue Bolt UI</a>. <a href="https://github.com/Sukonik/GoldAccountManager">Source on GitHub</a>.
+    Site version <a href="versions.html">0.3.0</a>.</p>
+  </div>
+</footer>
+</body>
+</html>

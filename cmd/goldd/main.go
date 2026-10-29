@@ -21,9 +21,16 @@ Usage:
   goldd version
   goldd packet new   -app ID [-name NAME] [-o FILE]
   goldd packet check [-app ID] FILE
+  goldd keygen       [-app ID]...
+  goldd serve        -config FILE | -dev  [-addr 127.0.0.1:8080] [-base-url URL]
 
 A packet is a plain-JSON account file the user owns. "new" writes an empty one
 for an app. "check" validates a file the way an app would when opening it.
+
+"serve" runs the confirmation service: it emails a link, and signs an
+attestation once the user confirms. "serve -dev" needs no setup and prints the
+links instead of sending email. "keygen" makes the secrets a real deployment
+needs. Keys and secrets live in the environment, not in the config file.
 `
 
 func main() { os.Exit(run(os.Args[1:], os.Stdout, os.Stderr)) }
@@ -48,6 +55,10 @@ func run(args []string, stdout, stderr io.Writer) int {
 		case "check":
 			return packetCheck(args[2:], stdout, stderr)
 		}
+	case "serve":
+		return serveCmd(args[1:], stdout, stderr)
+	case "keygen":
+		return keygenCmd(args[1:], stdout, stderr)
 	case "help", "-h", "--help":
 		say(stdout, usage)
 		return 0

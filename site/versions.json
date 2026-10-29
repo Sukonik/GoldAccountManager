@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.3.0",
+    "name": "Confirmation server",
+    "date": "2026-10-29",
+    "path": "v0.3/",
+    "summary": "The first confirmation server: email links with a click-to-confirm page, one-time pickup of signed attestations, per-app quotas, rate limits, goldd serve and keygen, plus a Server page and API reference."
+  },
+  {
     "version": "0.2.0",
     "name": "Browser reader and Try it",
     "date": "2026-10-29",

@@ -46,7 +46,7 @@ func TestCheckWarnsOnEdit(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(file, []byte(strings.Replace(string(b), "Mine", "Yours", 1)), 0o600); err != nil {
+	if err := os.WriteFile(file, []byte(strings.Replace(string(b), "Mine", "Yours", 1)), 0o600); err != nil { //nolint:gosec // a file in t.TempDir
 		t.Fatal(err)
 	}
 	code, out, _ := capture("packet", "check", file)

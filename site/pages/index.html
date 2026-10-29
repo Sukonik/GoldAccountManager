@@ -20,8 +20,8 @@
   </article>
   <article class="bb-card">
     <h3>Tier 1 · Verified packet</h3>
-    <p><span class="bb-tag">Tiny service</span></p>
-    <p>The user confirms an email or phone once. A server signs a short <a href="verification.html">attestation</a> that travels inside the packet. No re-confirmation needed.</p>
+    <p><span class="bb-tag">Reference server included</span></p>
+    <p>The user confirms an email once. A small <a href="server.html">server</a> signs a short <a href="verification.html">attestation</a> that travels inside the packet. No re-confirmation needed.</p>
   </article>
   <article class="bb-card">
     <h3>Tier 2 · Hosted account</h3>
@@ -60,7 +60,7 @@ go run ./cmd/goldd packet check -app notes-demo sam.gold</code></pre>
 
 <div class="bb-notice bb-notice--warn">
   <strong>Honest status</strong>
-  <p>This is early development: the packet format, signed attestations, a command line and the browser demo. There is no server, no web sign-in and no hosted tier yet. See the <a href="roadmap.html">roadmap</a>.</p>
+  <p>This is early development: the packet format, signed attestations, a command line, the browser demo, and a first confirmation server (email links only, state in memory). There is no durable storage, no Google or SMS sign-in and no hosted tier yet. See the <a href="roadmap.html">roadmap</a>.</p>
 </div>
 
 <p>The idea comes from <a href="history.html">Payout Lab</a>, a no-sign-up dividend tracker whose portfolio is a file. The interface is <a href="blue-bolt.html">Blue Bolt UI</a>.</p>

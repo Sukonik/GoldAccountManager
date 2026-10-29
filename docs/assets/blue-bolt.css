@@ -181,7 +181,7 @@ a.bb-card { display: block; color: inherit; text-decoration: none; transition: t
 .bb-brand { display: inline-flex; align-items: center; gap: var(--bb-space-03); font-weight: 800; letter-spacing: -.02em; font-size: 1.1rem; color: var(--bb-text-primary); text-decoration: none; }
 .bb-brand__mark { width: 30px; height: 30px; border-radius: 9px; background: linear-gradient(135deg, var(--bb-interactive), #0b2a8a); display: grid; place-items: center; color: #fff; }
 .bb-nav { display: flex; gap: var(--bb-space-02); flex-wrap: wrap; flex: 1; }
-.bb-nav a { display: inline-flex; align-items: center; min-height: 40px; padding: 0 var(--bb-space-03); white-space: nowrap; border-radius: var(--bb-radius-pill); color: var(--bb-text-secondary); font-weight: 600; text-decoration: none; }
+.bb-nav a { display: inline-flex; align-items: center; min-height: 40px; padding: 0 calc(var(--bb-space-03) - 2px); white-space: nowrap; border-radius: var(--bb-radius-pill); color: var(--bb-text-secondary); font-weight: 600; text-decoration: none; }
 .bb-nav a:hover { color: var(--bb-text-primary); background: var(--bb-layer-2); }
 .bb-nav a[aria-current="page"] { background: var(--bb-tag-bg); color: var(--bb-tag-text); }
 .bb-theme { margin-left: auto; min-height: 40px; background: transparent; color: var(--bb-text-primary); border-color: var(--bb-border); }
@@ -203,8 +203,8 @@ main { padding: var(--bb-space-08) 0 var(--bb-space-11); }
 @media (max-width: 480px) { .bb-kv { grid-template-columns: 1fr; gap: 0; } .bb-kv dd { margin-bottom: var(--bb-space-03); } }
 .bb-copy { position: absolute; top: var(--bb-space-03); right: var(--bb-space-03); min-height: 32px; padding: 0 var(--bb-space-03); font-size: .8rem; background: var(--bb-layer-2); color: var(--bb-text-primary); border-color: var(--bb-border); }
 
-/* narrow screens: brand and theme button on the first row, nav scrolls sideways on its own row */
-@media (max-width: 900px) {
+/* below 1100px the full nav no longer fits beside the brand: brand and theme button take the first row and the nav scrolls sideways on its own row */
+@media (max-width: 1100px) {
   .bb-header__in { gap: var(--bb-space-02) var(--bb-space-04); }
   .bb-brand { font-size: 1rem; }
   .bb-theme { min-height: 36px; padding: 0 var(--bb-space-03); font-size: .85rem; }

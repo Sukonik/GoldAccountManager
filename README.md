@@ -9,7 +9,7 @@ An open-source **Go** toolkit for user accounts that start with **no server, no 
 ![License](https://img.shields.io/badge/license-MPL--2.0-blue)
 ![Status](https://img.shields.io/badge/status-Phase%200%20%C2%B7%20early%20development-orange)
 
-> 🚧 **Honest status:** early development. The packet format, signed attestations, a command line, a browser reader with a [try-it demo](https://sukonik.github.io/GoldAccountManager/try.html), and the documentation site are built and tested. There is **no server, no web sign-in and no hosted tier yet**, and nothing here has had an external security review. See the [roadmap](#-roadmap).
+> 🚧 **Honest status:** early development. The packet format, signed attestations, a command line, a browser reader with a [try-it demo](https://sukonik.github.io/GoldAccountManager/try.html), a first **confirmation server** (email links only), and the documentation site are built and tested. There is **no durable storage** (server state is in memory), **no Google or SMS sign-in and no hosted tier yet**, and nothing here has had an external security review. See the [roadmap](#-roadmap).
 
 ### 🧪 [Try it in your browser →](https://sukonik.github.io/GoldAccountManager/try.html)
 
@@ -17,7 +17,7 @@ Make a packet, download it as a file, change it, and open it again. No sign-up, 
 
 ## 📑 Contents
 
-[🌐 Website and versions](#-website-and-versions) · [🧪 Try it](#-try-it-in-your-browser) · [📦 What is a packet?](#-what-is-a-packet) · [🕰️ History: from Payout Lab](#️-history-from-payout-lab) · [🧱 Three tiers](#-three-tiers) · [✅ Free-first verification](#-free-first-verification) · [🧰 Use it from Go](#-use-it-from-go) · [🌍 In the browser](#-in-the-browser) · [💻 Command line](#-command-line) · [🎨 Blue Bolt UI](#-blue-bolt-ui) · [🧪 Quality checks](#-quality-checks) · [🗺️ Roadmap](#-roadmap) · [📚 All resources](#-all-resources) · [🗃️ Project layout](#️-project-layout) · [🛠️ Development](#️-development) · [🤝 Contributing](#-contributing)
+[🌐 Website and versions](#-website-and-versions) · [🧪 Try it](#-try-it-in-your-browser) · [📦 What is a packet?](#-what-is-a-packet) · [🕰️ History: from Payout Lab](#️-history-from-payout-lab) · [🧱 Three tiers](#-three-tiers) · [✅ Free-first verification](#-free-first-verification) · [🛰️ Confirmation server](#️-confirmation-server) · [🧰 Use it from Go](#-use-it-from-go) · [🌍 In the browser](#-in-the-browser) · [💻 Command line](#-command-line) · [🎨 Blue Bolt UI](#-blue-bolt-ui) · [🧪 Quality checks](#-quality-checks) · [🗺️ Roadmap](#-roadmap) · [📚 All resources](#-all-resources) · [🗃️ Project layout](#️-project-layout) · [🛠️ Development](#️-development) · [🤝 Contributing](#-contributing)
 
 ---
 
@@ -30,7 +30,8 @@ The main address always shows the **latest** version. Every release is also **pr
 <!-- versions:start -->
 | Version | Released | What it covers | 🔗 Latest | 📌 Preserved |
 |---|---|---|---|---|
-| **0.2.0** · Browser reader and Try it ⭐ *current* | 2026-10-29 | A browser packet reader checked against the Go reader, the interactive Try it demo, every version on the home page, and one-command releases. | [Open](https://sukonik.github.io/GoldAccountManager/) | [`/v0.2/`](https://sukonik.github.io/GoldAccountManager/v0.2/index.html) |
+| **0.3.0** · Confirmation server ⭐ *current* | 2026-10-29 | The first confirmation server: email links with a click-to-confirm page, one-time pickup of signed attestations, per-app quotas, rate limits, goldd serve and keygen, plus a Server page and API reference. | [Open](https://sukonik.github.io/GoldAccountManager/) | [`/v0.3/`](https://sukonik.github.io/GoldAccountManager/v0.3/index.html) |
+| **0.2.0** · Browser reader and Try it | 2026-10-29 | A browser packet reader checked against the Go reader, the interactive Try it demo, every version on the home page, and one-command releases. | — | [`/v0.2/`](https://sukonik.github.io/GoldAccountManager/v0.2/index.html) |
 | **0.1.0** · Phase 0: Packets | 2026-10-29 | Packet format, attestations, the goldd command line, Blue Bolt UI v0.1 and the first documentation pages. | — | [`/v0.1/`](https://sukonik.github.io/GoldAccountManager/v0.1/index.html) |
 <!-- versions:end -->
 
@@ -45,6 +46,7 @@ The site's own [Versions page](https://sukonik.github.io/GoldAccountManager/vers
 | 🧪 | [Try it](https://sukonik.github.io/GoldAccountManager/try.html) | [`site/pages/try.html`](site/pages/try.html) |
 | 📦 | [Packets](https://sukonik.github.io/GoldAccountManager/packets.html) | [`site/pages/packets.html`](site/pages/packets.html) |
 | ✅ | [Verification](https://sukonik.github.io/GoldAccountManager/verification.html) | [`site/pages/verification.html`](site/pages/verification.html) |
+| 🛰️ | [Server](https://sukonik.github.io/GoldAccountManager/server.html) | [`site/pages/server.html`](site/pages/server.html) |
 | 🕰️ | [History](https://sukonik.github.io/GoldAccountManager/history.html) | [`site/pages/history.html`](site/pages/history.html) |
 | 🎨 | [Blue Bolt UI](https://sukonik.github.io/GoldAccountManager/blue-bolt.html) | [`site/pages/blue-bolt.html`](site/pages/blue-bolt.html) |
 | 🗺️ | [Roadmap](https://sukonik.github.io/GoldAccountManager/roadmap.html) | [`site/pages/roadmap.html`](site/pages/roadmap.html) |
@@ -205,9 +207,65 @@ After any rung succeeds, the server signs a short attestation that rides in the 
 
 ---
 
+## 🛰️ Confirmation server
+
+The one piece of server in a Tier 1 app. It emails a confirmation link, and once the user confirms, signs the attestation that goes in their packet. Built into `goldd`, and usable as the Go package [`server`](server).
+
+### ▶️ Run the demo (no setup, no real email)
+
+```bash
+go run ./cmd/goldd serve -dev
+```
+
+```bash
+# in another terminal
+curl -s -X POST localhost:8080/v1/apps/demo-work/confirm/start \
+  -H 'content-type: application/json' \
+  -d '{"kind":"email","target":"sam@example.com","packetId":"pk_abcdefgh12345"}'
+```
+
+Open the link the server printed (or `GET /dev/inbox`), press **Confirm**, then `POST …/confirm/pickup` with the `challengeId` and `pickup` you got back to receive the signed attestation. `/v1/keys` publishes the public key to verify it.
+
+### 🔄 The flow
+
+1. 📨 **Start**: the app sends the address and packet id. The server emails a link and returns a challenge id and a secret *pickup* value
+2. 🖱️ **Open the link**: a page with a **Confirm** button. Opening the link changes nothing
+3. ✅ **Press Confirm**: the token is checked, the app's quota applied, and an attestation signed for that packet
+4. 📥 **Pick up**: the app polls and receives the attestation **once**
+
+### 🛡️ What it is careful about
+
+| Risk | What it does |
+|---|---|
+| 🤖 Mail scanners confirm for the user | A GET never confirms. Only the button does |
+| 🕵️ Someone intercepts the result | Released once, only with the pickup secret. Wrong id, secret, app or an expired challenge all give the same `404` |
+| 💣 Mail-bombing an address | 5 emails per address and 20 per client per hour, per app |
+| 🔍 Learning who is a member | `start` looks the same for every address. The quota applies only after the person proves control of the inbox |
+| 🔑 Secrets leaking | Tokens and pickup values stored hashed. Addresses, tokens and secrets never logged. `Referrer-Policy: no-referrer` on the link page |
+| ✉️ Header injection | Addresses with line breaks or extra recipients are refused before a connection opens |
+| 🔓 Plain-text mail | SMTP needs STARTTLS unless the server is local, and a failed STARTTLS fails the send, never downgrades |
+| 🪪 Forged `Host` / `X-Forwarded-For` | Links use the configured base address. The forwarded header is ignored unless trusted, and then only its last entry is used |
+
+### 🎟️ Free-tier limits per app
+
+Each app has its own secret, so the same address in two apps gives two unrelated subjects. `maxSubjects` caps how many different addresses an app confirms, and `onLimit` is `block` or `waitlist`. People already in a full app are always let back in.
+
+### 🚀 Real deployment
+
+```bash
+goldd keygen -app notes-demo        # prints GOLD_SIGNING_SEED and GOLD_APP_SECRET_NOTES_DEMO
+goldd serve -config goldd.json      # config holds no secrets; unknown settings are errors
+```
+
+Run it behind a TLS proxy on one instance. Full reference: [`docs/server-api.md`](docs/server-api.md) and the [Server page](https://sukonik.github.io/GoldAccountManager/server.html).
+
+> ⚠️ **Known limits:** state is **in memory**, so a restart forgets unfinished confirmations **and app quotas** (an app can exceed its cap afterwards). Email links only. One instance. Not externally reviewed.
+
+---
+
 ## 🧰 Use it from Go
 
-Needs **Go 1.24+** for the libraries and `goldd`. The module has **no third-party dependencies**. To build the docs site, use a current Go release (see [Quality checks](#-quality-checks)).
+The module has **no third-party dependencies**. The `packet` and `verify` libraries build with Go 1.24+. **The confirmation server and `goldd serve` are network services: build them with the newest Go patch release** (see [Quality checks](#-quality-checks)). `go.mod` pins a patched toolchain, so `go build` fetches it for you.
 
 ```go
 import (
@@ -231,6 +289,18 @@ opened, warnings, err := packet.Parse(file, packet.ParseOptions{
 		return raw, nil
 	},
 })
+```
+
+### 🛰️ Run the confirmation server in your own program
+
+```go
+srv, err := server.New(server.Config{
+	BaseURL: "https://auth.example.com",
+	Signer:  signer,                    // verify.NewSigner(keyID, privateKey)
+	Mailer:  &server.SMTPMailer{Addr: "smtp.example.com:587", From: "noreply@example.com"},
+	Apps:    []server.App{{ID: "notes-demo", Name: "Notes Demo", Secret: secret, MaxSubjects: 100, OnLimit: server.LimitWaitlist}},
+})
+http.ListenAndServe("127.0.0.1:8080", srv.Handler()) // behind a TLS proxy; cmd/goldd adds timeouts
 ```
 
 ### 🌿 Compare two copies
@@ -287,6 +357,8 @@ if verify.Has(checker.Check(p, time.Now()), packet.KindEmail) {
 go run ./cmd/goldd packet new   -app notes-demo -name "Sam's notes" -o sam.gold
 go run ./cmd/goldd packet check -app notes-demo sam.gold
 go run ./cmd/goldd version
+go run ./cmd/goldd keygen -app notes-demo      # secrets for a real deployment
+go run ./cmd/goldd serve -dev                    # confirmation server demo
 ```
 
 | Exit code | Meaning |
@@ -335,10 +407,12 @@ No code was copied. Licenses are in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTIC
 | 🔀 **Cross-language checksums** | ✅ Match Payout Lab's JavaScript on three vectors (numbers, strings, nesting) |
 | 🐛 **Fuzzing** (`FuzzParse`) | 🔧 Found **two real bugs**, both fixed and kept as regression tests: a crash on `"lineage": []`, and case-insensitive field names |
 | 🧹 `golangci-lint` (incl. `gosec`, `errorlint`, `revive`) | ✅ 0 issues |
-| 🛡️ `govulncheck` | ✅ **Libraries and `goldd`: clean on every Go version tried** (after removing `net/mail`, which had 3 reported issues, in favor of a small strict email validator). The docs build tool `sitegen` is affected by standard-library issues in `html/template` and `os` on older Go (8 on Go 1.24.7 and 1.25.1, 2 on 1.25.13) and is **clean on Go 1.26.9**. CI uses the latest stable Go |
+| 🛡️ `govulncheck` | ✅ **Clean on Go 1.26.10.** Older releases are **not**: with the confirmation server in the module, today's scan finds **39** standard-library vulnerabilities in code we run on Go 1.24.7, **10** on 1.25.13 and 1 on 1.26.9 (mostly `net/http`, `crypto/tls`, `crypto/x509`, `html/template`). So `go.mod` pins `toolchain go1.26.10`, which makes `go build` fetch it automatically, and CI scans on the latest stable Go. Results change as the database grows, so **build the server with the newest patch release**. (Earlier, `net/mail` had 3 findings, which was fixed by replacing it with a small strict email validator) |
 | 🤝 **Go ⇄ JavaScript parity** | ✅ 99 parse cases and 3 checksum vectors agree. Each rule was deliberately broken in each reader to prove a test catches it |
 | 🟢 `node --test` (browser reader) | ✅ Passing, 108 tests |
 | 🧭 Browser end-to-end ([`site/tests/e2e-try.mjs`](site/tests/e2e-try.mjs), run by hand, needs Playwright) | ✅ 21 checks: a file made in the browser is accepted by `goldd packet check`, a hostile name does not run or become markup, nothing leaves localhost, no overflow at 320, 390 and 1280 px |
+| 🛰️ **Server and CLI tests** | ✅ Full flow over real sockets (including the `goldd serve -dev` binary), quotas and waitlist, expiry, replay, wrong tokens, CORS, security headers, rate limits, bounded state, a fake SMTP server, and error messages that must never print a secret |
+| 🔨 **Mutation checks** | ✅ ~30 deliberate breaks of the server, mailer, link channel and CLI (drop a limit, skip the pickup check, leak a secret, allow header injection, downgrade TLS…) are now each caught by a test. The process found **five weak tests that passed for the wrong reason**, all fixed (details in [`CONTRIBUTING.md`](CONTRIBUTING.md)) |
 | 🔗 Site link checker | ✅ Every internal link and anchor resolves, one `h1` per page |
 | 🌐 Browser check | ✅ No overflow at 320, 390, 1280 px. Theme toggle works |
 
@@ -352,9 +426,9 @@ Go review checklists came from [samber/cc-skills-golang](https://github.com/samb
 |---|---|---|
 | **0 · Foundations** | ✅ Done | Packet format, attestations, `goldd`, CI, docs site, Blue Bolt UI |
 | **0.5 · Browser and automation** | ✅ Done | Browser packet reader checked against Go, the Try it demo, one-command site releases |
-| **1 · Confirmation and sessions** | 🔜 Next | Real channels (magic link, reply email, Google), a small attestation server with per-app quotas and rate limits, long sessions with refresh rotation and a grace window, demo mode |
+| **1 · Confirmation** | 🔄 In progress | ✅ Email magic link, confirmation server with per-app quotas and rate limits, `goldd serve`/`keygen`, SMTP mailer, demo mode. 🔜 Durable store, Google sign-in, reply-email channel, connecting the Try it page, lost-packet recovery |
 | **2 · Encryption and passkeys** | 📅 Planned | Passkey-encrypted packets (before any private data), WebAuthn, Telegram and WhatsApp channels, a capped paid SMS channel |
-| **3 · Hosted tier and offline** | 📅 Planned | Server-side accounts for data-heavy apps, signed offline grants, per-app plans and billing |
+| **3 · Hosted tier and offline** | 📅 Planned | Server-side accounts and sessions (refresh rotation with a grace window) for data-heavy apps, signed offline grants, per-app plans and billing |
 
 **🚫 Deliberately not included:** one account shared across apps · acting as a sign-in provider for outside developers · a full SAML/enterprise single sign-on stack (use something like Keycloak).
 
@@ -369,6 +443,7 @@ Go review checklists came from [samber/cc-skills-golang](https://github.com/samb
 | 🌐 [Documentation site](https://sukonik.github.io/GoldAccountManager/) | Latest version · [all versions](https://sukonik.github.io/GoldAccountManager/versions.html) |
 | 📘 [`docs/packet-format.md`](docs/packet-format.md) | The normative packet specification |
 | 📘 [`docs/verification.md`](docs/verification.md) | Verification summary |
+| 🛰️ [`docs/server-api.md`](docs/server-api.md) | Confirmation server API, limits, configuration and known limits |
 | 🎯 [`SCOPE.md`](SCOPE.md) | **The current decisions**, which win if other planning notes disagree |
 | 🧩 [`FEATURES.md`](FEATURES.md) | The long feature wishlist and per-feature upstream references |
 | 🗓️ [`PLAN.md`](PLAN.md) | Phase plan and architecture |
@@ -418,9 +493,10 @@ Go review checklists came from [samber/cc-skills-golang](https://github.com/samb
 GoldAccountManager/
 ├── packet/            # the packet format: parse, marshal, compare, canonical JSON
 │   └── testdata/      # parity.json: cases shared with the JavaScript reader
-├── verify/            # keyed subjects, signed attestations, confirmation channels
+├── verify/            # keyed subjects, signed attestations, confirmation channels (code, magic link)
+├── server/            # the confirmation server: email link flow, quotas, rate limits, mailers
 ├── cmd/
-│   ├── goldd/         # command line: packet new, packet check
+│   ├── goldd/         # command line: packet new/check, keygen, serve
 │   └── sitegen/       # builds the docs site from site/ into docs/
 ├── site/              # docs site sources
 │   ├── pages/         # page fragments

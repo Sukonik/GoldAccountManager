@@ -466,3 +466,9 @@ func checkKeyCase(obj map[string]any) *Error {
 	}
 	return nil
 }
+
+// IsPacketID reports whether s has the shape of a packet id.
+func IsPacketID(s string) bool { return idRE["pk"].MatchString(s) }
+
+// IsAppID reports whether s is a valid app id.
+func IsAppID(s string) bool { return appIDRE.MatchString(s) }

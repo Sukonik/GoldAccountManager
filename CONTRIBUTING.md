@@ -5,9 +5,10 @@ backed by a test or a link.
 
 ## Set up
 
-Go 1.24 or newer builds the libraries and `goldd`. Use a **current Go release** (1.26.9 or newer at the time of writing) for
-`cmd/sitegen`: `govulncheck` reports standard-library issues in `html/template` and `os` on older releases. Install the two
-checkers once:
+`go.mod` pins a patched Go toolchain (`toolchain go1.26.10`), and `go` fetches it automatically. That is deliberate: the
+confirmation server is a network service, and `govulncheck` reports dozens of standard-library vulnerabilities in code it
+runs on older releases. When `govulncheck` reports something fixed in a newer patch release, raise the `toolchain` line.
+The `packet` and `verify` libraries themselves build with Go 1.24+. Install the two checkers once:
 
 ```bash
 go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
@@ -36,6 +37,11 @@ answer on every case in `packet/testdata/parity.json`. If you change a parsing r
 that only that rule can fail: the Go test is `packet/parity_test.go`, the JavaScript test is `site/tests/packet.test.mjs`.
 When you add a case, break the rule on purpose in each reader to confirm a test notices. Several early cases passed for the
 wrong reason, and this is how that was found.
+
+The same discipline applies to the server: for every security property, break the code on purpose (drop a check, skip a header,
+widen a limit) and confirm a test fails. If none does, the test is passing for the wrong reason. Examples found this way: a
+fake SMTP server that served only one connection, so every later attempt "failed" by timeout, and a test that compared whole
+outputs while one fixed value hid among random ones.
 
 Before releasing a site version, also run the browser check by hand (needs Playwright):
 `go run ./cmd/sitegen && node site/tests/e2e-try.mjs`.

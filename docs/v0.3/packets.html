@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Packets · GoldAccountManager</title>
+<meta name="description" content="The Gold packet format: a plain JSON account file with identity, revision history, an app-defined payload, signed attestations and a checksum.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/blue-bolt.css">
+<script src="assets/blue-bolt.js"></script>
+</head>
+<body>
+<a class="bb-skip" href="#main">Skip to content</a>
+<header class="bb-header">
+  <div class="bb-container bb-header__in">
+    <a class="bb-brand" href="index.html">
+      <span class="bb-brand__mark" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 32 32"><path d="M18.5 4 8 18h7l-1.5 10L24 14h-7z" fill="currentColor"/></svg></span>
+      GoldAccountManager
+    </a>
+    <nav class="bb-nav" aria-label="Main">
+      <a href="index.html">Home</a>
+      <a href="try.html">Try it</a>
+      <a href="packets.html" aria-current="page">Packets</a>
+      <a href="verification.html">Verification</a>
+      <a href="server.html">Server</a>
+      <a href="history.html">History</a>
+      <a href="blue-bolt.html">Blue Bolt UI</a>
+      <a href="roadmap.html">Roadmap</a>
+      
+    </nav>
+    <button type="button" class="bb-theme" data-bb-theme-toggle>Theme: auto</button>
+  </div>
+</header>
+<main id="main">
+  <div class="bb-container">
+
+<h1>Packets</h1>
+<p class="bb-lead bb-muted">A packet is one plain JSON file that is the user's account for one app. It holds the app's data, an identity, a revision history and any server-signed attestations.</p>
+
+<h2>A real example</h2>
+<p>This file is <code>site/examples/attested.gold</code>, produced by the code in this repository. A test keeps it valid.</p>
+<pre><code>{
+ &#34;format&#34;: &#34;gold-packet&#34;,
+ &#34;schemaVersion&#34;: 1,
+ &#34;appId&#34;: &#34;notes-demo&#34;,
+ &#34;packetId&#34;: &#34;pk_5rh8n3m0ppqxr&#34;,
+ &#34;name&#34;: &#34;Sam&#39;s notes&#34;,
+ &#34;revisionId&#34;: &#34;rv_ba9m8znr3v9a5&#34;,
+ &#34;parentRevisionId&#34;: &#34;rv_qvqmeam54cad7&#34;,
+ &#34;lineage&#34;: [
+  &#34;rv_qvqmeam54cad7&#34;,
+  &#34;rv_ba9m8znr3v9a5&#34;
+ ],
+ &#34;createdAt&#34;: &#34;2026-10-29T12:00:00.000Z&#34;,
+ &#34;savedAt&#34;: &#34;2026-10-29T13:00:00.000Z&#34;,
+ &#34;app&#34;: {
+  &#34;name&#34;: &#34;Notes Demo&#34;,
+  &#34;version&#34;: &#34;0.1.0&#34;
+ },
+ &#34;payload&#34;: {
+  &#34;theme&#34;: &#34;dark&#34;,
+  &#34;fontSize&#34;: 16,
+  &#34;pinned&#34;: [
+   &#34;groceries&#34;,
+   &#34;ideas&#34;
+  ]
+ },
+ &#34;attestations&#34;: [
+  {
+   &#34;kind&#34;: &#34;email&#34;,
+   &#34;method&#34;: &#34;email-reply&#34;,
+   &#34;subject&#34;: &#34;5495abb52a557a70045dc477d3baad310f1e84e9634ea29245805484a743d21f&#34;,
+   &#34;issuedAt&#34;: &#34;2026-10-29T12:00:00.000Z&#34;,
+   &#34;expiresAt&#34;: &#34;2027-10-29T12:00:00.000Z&#34;,
+   &#34;keyId&#34;: &#34;docs-demo-1&#34;,
+   &#34;signature&#34;: &#34;g8Es5lMiFx7xVCeE30axkPXA6BKTbAi8cHE4oKT5szwUVnZqIs_gWoYLELTgHsAits6EDhN7Mgudo7DGbUnfAA&#34;
+  }
+ ],
+ &#34;checksum&#34;: {
+  &#34;alg&#34;: &#34;sha-256&#34;,
+  &#34;value&#34;: &#34;840edb950ab2c30c73eb0d2e9c53cf371046fe81260afeb0f1428310a6bffb87&#34;
+ }
+}
+</code></pre>
+
+<h2>The envelope</h2>
+<div class="bb-scroll"><table>
+<thead><tr><th>Field</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>format</code>, <code>schemaVersion</code></td><td><code>"gold-packet"</code> and <code>1</code>. A file with a higher version is rejected whole, never half-read.</td></tr>
+<tr><td><code>appId</code></td><td>Which app this account belongs to. Apps pass their own id when opening, so a packet for one app does not open in another. This is what keeps accounts isolated.</td></tr>
+<tr><td><code>packetId</code></td><td><code>pk_</code> plus 13 random characters (65 bits). A label, not a password and not proof of anything.</td></tr>
+<tr><td><code>revisionId</code>, <code>parentRevisionId</code>, <code>lineage</code></td><td>Every save makes a new revision that remembers its parent. The lineage (the last 200 revisions) tells two copies apart as identical, newer, older or diverged.</td></tr>
+<tr><td><code>payload</code></td><td>The app's own data: a JSON object, at most 4 MiB and 32 levels deep. The app supplies a validator that rebuilds it from known fields.</td></tr>
+<tr><td><code>attestations</code></td><td>Up to 8 server-signed statements that this packet is bound to a confirmed email, phone or device. See <a href="verification.html">Verification</a>.</td></tr>
+<tr><td><code>origin</code></td><td>Present when a file was opened as a separate copy, and records where it came from.</td></tr>
+<tr><td><code>checksum</code></td><td>SHA-256 of the canonical JSON of everything else.</td></tr>
+</tbody></table></div>
+
+<h2>Checksum is not a signature</h2>
+<div class="bb-notice bb-notice--warn">
+  <strong>Read this before relying on a packet</strong>
+  <p>The checksum catches <em>accidental</em> damage. Anyone can edit a file and recompute it. A parser warns when it does not match, but it does not prove who wrote the file. Anything a server must trust (a verified phone, a paid plan, an admin role) has to be a signed attestation, checked against the server's public key.</p>
+</div>
+
+<h2>Opening a packet safely</h2>
+<p>A packet is untrusted input, so parsing never executes anything and follows fixed rules:</p>
+<ol>
+  <li>Files over 5 MiB are refused. A leading byte-order mark is ignored.</li>
+  <li>The format and version are checked before anything else.</li>
+  <li>The envelope is rebuilt from known fields only. Unknown fields are dropped.</li>
+  <li>Field names are <strong>case-sensitive</strong>. Go's JSON decoder matches <code>AppId</code> to <code>appId</code>, but other readers do not, and two readers disagreeing about one file is how smuggling attacks work. Fuzzing found this, and now such files are rejected.</li>
+  <li>Ids, dates, names and attestations are checked against fixed patterns and limits.</li>
+  <li>The payload must be an object within the size and depth limits, then goes through the app's validator.</li>
+</ol>
+
+<h2>Comparing two copies</h2>
+<p>When the same packet shows up twice, for example from a phone and a laptop, <code>packet.Compare</code> reads the revision history. There is no silent "last write wins". If both changed, the result is <code>diverged</code> and the app should offer a separate copy.</p>
+<div class="bb-scroll"><table>
+<thead><tr><th>Relation</th><th>Meaning</th><th>What an app should offer</th></tr></thead>
+<tbody>
+<tr><td><code>identical</code></td><td>Same revision</td><td>Nothing to do</td></tr>
+<tr><td><code>incoming-newer</code></td><td>Your revision is in its history</td><td>Continue from it, or open a copy</td></tr>
+<tr><td><code>incoming-older</code></td><td>Its revision is in your history</td><td>Open a copy, or replace yours after a backup</td></tr>
+<tr><td><code>diverged</code></td><td>Both changed</td><td>Open a copy (recommended)</td></tr>
+<tr><td><code>different-packet</code></td><td>Different <code>packetId</code></td><td>Open it as another account</td></tr>
+</tbody></table></div>
+
+<h2>In Go</h2>
+<pre><code>now := time.Now()
+p, _ := packet.New("notes-demo", "Sam's notes", packet.AppInfo{Name: "Notes Demo", Version: "0.1.0"}, now)
+p.Payload = json.RawMessage(`{"theme":"dark"}`)
+file, _ := p.Marshal() // write this to disk: it is the user's account
+
+opened, warnings, err := packet.Parse(file, packet.ParseOptions{
+    ExpectAppID: "notes-demo", // keeps accounts isolated per app
+    ValidatePayload: func(raw json.RawMessage) (json.RawMessage, error) {
+        // rebuild the payload from whitelisted fields, or reject it
+        return raw, nil
+    },
+})</code></pre>
+<p>The full API, with runnable examples, is in the package documentation: <code>go doc ./packet</code>. The same rules are written out in <a href="https://github.com/Sukonik/GoldAccountManager/blob/main/docs/packet-format.md">docs/packet-format.md</a>.</p>
+
+<h2>In the browser</h2>
+<p>A second reader written in JavaScript, <code>assets/gold-packet.js</code>, follows the same rules and runs the same shared test cases as the Go code (<code>packet/testdata/parity.json</code>). Those cases were checked by deliberately breaking each reader to make sure a test notices. You can use it on the <a href="try.html">Try it</a> page: make a packet, download it, and open it again. It does not verify attestation signatures.</p>
+
+<h2>Limits to know about</h2>
+<ul>
+  <li><strong>Not encrypted yet.</strong> A packet is plain JSON. Encryption with a passkey-derived key is planned and must land before any private data uses packets.</li>
+  <li><strong>A lost file is a lost account</strong> unless the user also confirmed an email or phone, or kept a backup.</li>
+  <li><strong>Sync between devices is manual</strong> in Tier 0.</li>
+  <li><strong>A file cannot enforce quotas, roles or paid plans.</strong> Only signed attestations can.</li>
+</ul>
+
+  </div>
+</main>
+<footer class="bb-footer">
+  <div class="bb-container">
+    <p>GoldAccountManager is open source under the <a href="https://github.com/Sukonik/GoldAccountManager/blob/main/LICENSE">Mozilla Public License 2.0</a>.
+    The UI is <a href="blue-bolt.html">Blue Bolt UI</a>. <a href="https://github.com/Sukonik/GoldAccountManager">Source on GitHub</a>.
+    Site version <a href="versions.html">0.3.0</a>.</p>
+  </div>
+</footer>
+</body>
+</html>
