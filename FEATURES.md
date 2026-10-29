@@ -21,7 +21,9 @@ Upstream references are linked throughout. Descriptions of other projects are fr
 
 **License rule:** GoldAccountManager is MPL-2.0. Apache, MIT and BSD code can be used with attribution. AGPL code (Zitadel) must not be copied. Read its design, then write our own.
 
-## Core offer: sign up once, use every app
+> **Superseded:** the owner has decided that apps must **not** share accounts (see [SCOPE.md](SCOPE.md), Decision 1). Each app is an isolated user pool. The "sign up once" section below is kept only as a record of the idea and as a possible future opt-in. Ignore its OIDC-provider and pairwise-ID requirements for now.
+
+## Core offer: sign up once, use every app (superseded)
 
 **The user creates one Gold account and never fills in a sign-up form again.** Opening a second app is a one-tap "Continue as Sam" screen, not a new registration. This is the product. Everything else in this document serves it.
 

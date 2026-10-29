@@ -6,7 +6,7 @@ A plug-and-play account management toolkit written in Go. Drop in authentication
 
 ## The core offer: sign up once
 
-One Gold account works across all your apps. The second app is a one-tap "Continue as…" instead of another sign-up form. Users say what they're using each app for (**Work**, **Personal**, or **Utility**) and get a matching profile and security level. Apps see separate pseudonymous IDs by default, so a dating app and a legal tool can't correlate the same person. See [FEATURES.md](FEATURES.md).
+Accounts for any of your apps, each one a **fully isolated user pool**. A dating app and a legal tool never share users, IDs, or sessions, and nothing links them. Each app picks a preset (**Work**, **Leisure**, or **Utility**) that sets its security and session rules. Phone code, email magic link, and Google login are supported, sessions are long-lived so good users aren't kicked out, and every app has built-in free-tier quotas (user caps, SMS caps). See [SCOPE.md](SCOPE.md).
 
 ## Why GoldAccountManager
 

@@ -4,81 +4,116 @@ This page is the decision. [FEATURES.md](FEATURES.md) is the long wishlist, and 
 
 ## Requirements (from the owner)
 
-1. **User accounts for any of my apps.** Many apps, one system.
-2. **Scale at low cost.** Cheap to start, cheap to grow.
-3. **Free versions with limited user counts** at first, then raise the limit or charge.
-4. Simple to demo, with a clean UI.
+1. **User accounts for any of my apps.** Many apps, one toolkit.
+2. **Each app is isolated.** A new account every time. No shared users. A dating app user and a legal app user must never feel linked, and the system must not link them.
+3. **Phone first, email second, Google third.** Users must get in easily and *stay* in.
+4. **Never kick good users out.** The owner's experience with accounts on a dating app being repeatedly logged out or banned by Facebook login is the problem to avoid.
+5. **Scale at low cost, and free to host.** Free versions with limited user counts at first.
+6. Simple to demo, with a clean UI. Prefer existing free systems to running our own.
 
-## The approach
+## Decision 1: every app is its own island
 
-**A self-hosted Go service: a single binary with SQLite to start, Postgres when you outgrow it.** Think "Firebase Auth that you run yourself."
+This **replaces the earlier "one account across all apps" idea.**
 
-Why this fits the requirements:
+- An app is a **separate user pool** (a tenant): its own users, sessions, roles, settings and quotas.
+- The same person using two apps has two unrelated accounts. There are no cross-app IDs, no shared sessions, and no "Continue as…" screen.
+- Because nothing is shared, **we no longer need to be an OIDC provider, and the apps can be on unrelated domains** with no cross-domain single sign-on.
+- Phone numbers and emails are stored per app. Lookup uses a keyed hash with an app-specific secret, and the readable value is encrypted separately for sending messages. So even our own database has no easy "same phone in two apps" join. (A determined operator with all the keys could still link them, so the privacy promise depends on trusting the operator. Say that honestly to users.)
+- **Autofill is optional and user-driven**, a later feature. When a user signs up to a new app, they can choose "fill in my details" from their own device (browser or OS autofill, or a saved card in the account hub). The screen states exactly what is sent: *"This app will get your name and email. Nothing else. It is not linked to your other apps."* There is no server-side link between accounts.
+- The **purpose** (Work / Personal / Utility) becomes a property of **the app**, as its preset, which sets its security and session defaults. It is no longer a user choice.
 
-| Requirement | How |
+## Decision 2: phone first, and never kick good users out
+
+### Sign-in methods in v0.1
+
+1. **Phone number + SMS code** (default for the Leisure preset)
+2. **Email magic link**
+3. **Google login**
+4. Guest first, then link a real login later (keeps data, no friction)
+
+### Why users get kicked out, and what we do instead
+
+| Common cause | Our rule |
 |---|---|
-| Any app | Each app is a row in an `apps` table. Adding an app takes one command, not a new deployment |
-| Low-cost scale | One small server (a few dollars a month) with SQLite handles a lot of small apps. The cost is flat, not per active user |
-| Free tier with user limits | **Per-app user quotas are a built-in feature** (below) |
-| Easy demo | `goldd demo` seeds two demo apps and prints a login link |
+| Short sessions, so people re-verify constantly | Long sliding sessions: 90 days or more for Leisure and Utility. Stricter windows only for Work |
+| Refresh-token theft detection that revokes on any reuse, which trips on flaky networks and double taps | Rotation with a **short grace window**. Reuse inside it is treated as a retry. Reuse outside it asks the user to verify, it does not silently log them out |
+| Risk signals (new IP, new device) that trigger a lockout or ban | Signals only ever add a **challenge** (a code), never an automatic ban or an unrecoverable lock |
+| Losing the phone number or email means losing the account | Let users add a second method (email + phone) early, and offer recovery through whichever remains |
+| SMS needed on every login | SMS only for sign-up, a new unrecognized device, and recovery. After that, the device stays signed in, and a passkey can replace SMS later |
+| Third-party login (Facebook) can revoke your account at any time | Our account is ours. Google login is a convenience that can be detached, and a phone or email always remains |
 
-Costs to watch are not hosting. They are **SMS** (paid per message, and abused by fraud bots) and **email** (cheap but needs a sending provider). So v0.1 uses email magic links and Google login only. SMS stays off by default and, when added, has a hard spending cap.
+### SMS cost control
 
-Honest trade-offs against Firebase:
-- Firebase is faster to start and Google runs it for you. Gold is cheaper at scale, you own the data, and you can add features like personas and offline grants. In return, you are responsible for uptime, backups and security patches.
-- Authentication is high-risk code. We reduce that risk by keeping v0.1 small, avoiding stored passwords at first (magic links and Google login only), and testing the security-critical paths heavily. Verify current Firebase pricing yourself before deciding how much cost matters.
+SMS is the one cost that scales with users, and it attracts fraud. There is no truly free SMS at volume.
+- Send codes only when needed (see above).
+- Cap sends per number, per IP, per app per day, and per app per month. The cap is part of each app's quota.
+- Block premium and high-fraud country prefixes by default. The owner picks allowed countries.
+- Use an `SMSSender` interface so the provider can change. Candidates to compare: Twilio Verify, Firebase phone auth, Vonage, regional providers. **Check current prices and free allowances yourself. I have not verified them.**
+- In demo mode, codes print to the terminal at no cost.
+
+## Decision 3: free hosting
+
+Free tiers change often, so treat this as a starting list and verify each.
+
+| Option | Good for | Watch out for |
+|---|---|---|
+| **Oracle Cloud "Always Free" VM** | Our single Go binary + SQLite, persistent disk | Sign-up can be rejected, idle instances can be reclaimed, and you do your own backups |
+| **Google Cloud Run** (free allowance) | Go in a container, scales to zero | Stateless, so you need an external Postgres. Cold starts |
+| **Free managed Postgres** (e.g. Neon, Supabase) | Pairs with Cloud Run or similar | Free projects can pause when idle, and have size limits |
+| **Free email providers** (e.g. Resend, Brevo) | Magic links | Daily send limits on the free plan |
+| **Fly.io, Render, Railway** | Easy deploys | Free allowances have been reduced or removed before. Check now |
+| **Home server** | Truly free, and you own it | Uptime, dynamic IP, and exposing it safely |
+
+Design consequence: SQLite for the simplest free VM, **and a Postgres store early** so Cloud Run-style hosting is possible. Back up SQLite continuously (Litestream to free object storage is a common pattern, verify).
+
+## Decision 4: build the engine, or adapt one?
+
+Since you prefer existing systems, this is the biggest open choice. Phone-first, isolated per-app pools and free hosting are exactly what some existing open-source auth servers already do.
+
+| Option | What you get | Cost to you |
+|---|---|---|
+| **A. Write our own auth engine in Go** (the plan so far) | Full control, tiny footprint | Longest build. You own every security bug |
+| **B. Gold as a thin layer over an existing engine.** Candidates: [Supabase Auth](https://github.com/supabase/auth) (Go, phone OTP, magic link, Google), [Ory Kratos](https://github.com/ory/kratos) (Go), [SuperTokens](https://github.com/supertokens/supertokens-core) (Java core) | Proven login, phone, email and sessions. Gold adds per-app quotas, presets, the admin and demo UI, and the "never kick out" rules | Smaller build. Limited by the engine's behavior. Verify licenses and how each handles phone login and per-app isolation |
+| **C. Firebase or Supabase hosted, today** | Fastest to ship, free tiers, phone auth built in | Not self-hosted. Vendor limits. Per-app isolation means one project per app |
+
+**Recommendation: start with B or C for the first real app and make the `AuthEngine` an interface.** Prove your apps first. Keep Gold's own value (quotas, presets, clean admin, the isolation promise) as the layer you build. Write our own engine only if an existing one blocks you. This is a recommendation, not a decision. I have not tested any of these engines.
 
 ## Quotas: the free-tier feature
 
-Every app has a plan, and every plan has limits that Gold enforces:
+Every app has a plan with limits Gold enforces:
 
 | Setting | Meaning | Example |
 |---|---|---|
 | `max_users` | Hard cap on accounts for this app | 100 on Free |
-| `max_monthly_active` | Optional soft cap on active users | 50 |
-| `sms_budget` | Monthly spend or message cap (later) | 0 on Free |
-| `on_limit` | `block_signups` (default), `waitlist`, or `notify_only` | `waitlist` |
+| `max_monthly_active` | Optional soft cap | 50 |
+| `sms_monthly_cap` | Max SMS codes per month | 200 on Free |
+| `on_limit` | `block_signups`, `waitlist`, or `notify_only` | `waitlist` |
 
-- Existing users are never locked out when the cap is hit. Only new sign-ups are affected.
-- The sign-up screen shows a plain "This app is full, join the waitlist" message instead of an error.
-- Raising a limit is one config change or one admin button. Later, it can follow a billing plan.
-- Quotas belong to the **app**, not the end user. This is the developer-facing side of billing. End-user billing is a later feature.
+- Existing users are never locked out when a cap is hit. Only new sign-ups are affected.
+- A full app shows a plain "This app is full, join the waitlist" screen.
+- Quotas belong to the **app**. End-user billing comes later.
 
 ## Version 0.1: the only things we build
 
-1. **Apps:** create and configure apps, each with an ID, allowed redirect URLs, plan and quotas.
-2. **Sign-in:** email magic link and Google login.
-3. **Anonymous then linked:** start as a guest and attach a real login later, so no data is lost.
-4. **One account, many apps:** a user signs up once and opens a second app with a one-tap "Continue as…" (standard OIDC code + PKCE underneath).
-5. **Purpose per app:** Work / Personal / Utility, saved as a field for now.
-6. **Sessions:** secure cookies and tokens, with rotation and revocation.
-7. **Roles:** a simple role field per app, checked in the app's own code.
-8. **Quotas:** as above.
-9. **Admin page:** apps, users, quotas and sessions, with clean UI.
-10. **Audit table:** an append-only log of sign-ins and admin actions.
-11. **Demo mode:** seeded data and a dev inbox page, so there is no email provider to set up.
+1. **Apps as isolated pools:** create an app with its own ID, redirect URLs, preset, plan and quotas.
+2. **Sign-in:** phone + SMS code, email magic link, Google login, guest-then-link.
+3. **Sessions:** long sliding sessions, rotation with a grace window, device list, revoke.
+4. **Roles:** a simple role field per app.
+5. **Quotas** including the SMS cap.
+6. **Admin page** with clean UI: apps, users, quotas, sessions.
+7. **Audit table:** append-only record of sign-ins and admin actions, holding user IDs and no personal data.
+8. **Demo mode:** two seeded apps (one Work, one Leisure), codes and links printed or shown in a dev inbox.
 
 ## Not in v0.1 (parked in FEATURES.md)
 
-SMS codes, passkeys, TOTP, device recognition, field encryption, media, billing and Stripe, the offline legal mode, SAML and enterprise SSO, organizations and teams, Casbin and Keto adapters, hash-chained audit, and Postgres. Each is a separate later step. Nothing in 0.1 should block any of them.
-
-## Rules for the build
-
-- Standard library first. Extra dependencies need a written reason.
-- Every table that holds users carries an `app_id`, so quotas and multi-app work from day one.
-- Interfaces for `Store`, `Mailer` and later `SMSSender`, so SQLite-to-Postgres and Stripe-later are not rewrites.
-- Take ideas from Kratos, Keycloak, SuperTokens and Casdoor (links in FEATURES.md). Never copy AGPL code (Zitadel).
+Cross-app accounts and OIDC provider, passkeys, TOTP, field encryption, media, billing and Stripe, offline legal mode, SAML and enterprise SSO, organizations, Casbin and Keto adapters, hash-chained audit, and device-fingerprint recognition beyond a simple trusted-device cookie.
 
 ## Done means
 
-A stranger can clone the repo, run `goldd demo`, sign in to Demo App A with a magic link, open Demo App B with one click, hit the 100-user cap in a test app and see the waitlist message, and see all of it in the admin page. That takes under five minutes.
-
-## Next step
-
-Phase 0 from [PLAN.md](PLAN.md): Go module, CI, migrations and an empty skeleton with passing tests. Then build the list above in order.
+A stranger can run `goldd demo`, sign in to the Leisure demo app with a phone code (printed to the terminal) and to the Work demo app with a magic link, confirm that the two accounts are completely separate, hit a 100-user cap in a test app and see the waitlist, stay signed in after a simulated network retry, and see everything in the admin page, in under five minutes.
 
 ## Still open
 
-1. Is **Google login plus email magic link** enough for v0.1, or does an app need something else on day one?
-2. Do all your apps sit under one parent domain (simpler) or on unrelated domains?
-3. Which hosting do you have in mind (a VPS, Fly.io, a home server)? It only affects the demo and Docker setup.
+1. **Build the engine or adapt one?** (Decision 4.) This sets what Phase 0 even is.
+2. **SMS:** which countries do you need, and what monthly budget is acceptable?
+3. **Autofill:** is a user-held details card enough, or do you want something deeper? Keep it out of v0.1 either way.
