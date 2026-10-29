@@ -78,6 +78,22 @@ Since you prefer existing systems, this is the biggest open choice. Phone-first,
 
 **Recommendation: start with B or C for the first real app and make the `AuthEngine` an interface.** Prove your apps first. Keep Gold's own value (quotas, presets, clean admin, the isolation promise) as the layer you build. Write our own engine only if an existing one blocks you. This is a recommendation, not a decision. I have not tested any of these engines.
 
+### Decision 4 outcome (owner): combine B and C
+
+Use a hosted engine now (C) and build Gold as the layer on top (B), behind an `AuthEngine` interface.
+
+Findings from a quick web check (third-party sources, **re-verify on the vendors' own pricing pages**):
+
+| Platform | Free-tier facts found | Fit |
+|---|---|---|
+| [Supabase](https://makerkit.dev/blog/md/saas/supabase-pricing) | 50,000 MAU, 500 MB database, free projects pause after 1 week idle. Phone-auth SMS cost and free project count not confirmed | Leading candidate for the auth engine |
+| [Neon](https://neon.com/faqs/free-plan-limits-and-quotas) | Serverless Postgres, 100 free projects, 0.5 GB each. [Neon Auth](https://neon.com/docs/changelog/2025-12-12) is new (reported 60K MAU, unconfirmed) | Good for Gold's own tables and one project per app. Auth is less proven |
+| [Firebase](https://blog.logto.io/it/firebase-authentication-pricing) | Email, social and anonymous are free. Phone sign-in needs the paid Blaze plan (first 10 SMS a day free, then about $0.01 to $0.46 each) | Familiar, but not free for phone-first |
+
+Because SMS is the real cost on every platform, the per-app SMS cap and country allow-list are core features.
+
+**To verify before building:** Supabase's current free-project count, which SMS provider its phone auth needs and who pays, and how idle-pausing affects a live app.
+
 ## Quotas: the free-tier feature
 
 Every app has a plan with limits Gold enforces:
