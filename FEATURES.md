@@ -21,9 +21,33 @@ Upstream references are linked throughout. Descriptions of other projects are fr
 
 **License rule:** GoldAccountManager is MPL-2.0. Apache, MIT and BSD code can be used with attribution. AGPL code (Zitadel) must not be copied. Read its design, then write our own.
 
-## Core idea: three app presets
+## Core offer: sign up once, use every app
 
-Your apps differ mainly in how much is at stake if an account is compromised and how much friction users will tolerate. Instead of three products, we ship **one core with three presets**. A preset is a named bundle of security policy, session rules, data handling, and UI defaults. It is the same idea as a Keycloak *realm* (<https://github.com/keycloak/keycloak>) or an Authentik *flow* set (<https://github.com/goauthentik/authentik>), but chosen with one line of config.
+**The user creates one Gold account and never fills in a sign-up form again.** Opening a second app is a one-tap "Continue as Sam" screen, not a new registration. This is the product. Everything else in this document serves it.
+
+### How it works
+
+1. **One identity, many apps.** A central account holds credentials (passkey, magic link, phone, password) and a single sign-on session. Each of your apps is a registered *client* of it. This is the Keycloak realm-and-client model (<https://github.com/keycloak/keycloak>) at a much smaller scale.
+2. **Lazy, per-app profiles.** A new app only asks for what it needs, at the moment it needs it (progressive profiling). Keycloak's *required actions* and Kratos settings flows are the reference (<https://github.com/ory/kratos>). The legal app might ask for a firm name. The utility app asks for nothing.
+3. **"What are you using this for?"** On first use of an app, or once at account creation, the user picks a purpose: **Work**, **Personal**, or **Utility**. Each purpose is a **persona**: its own profile, display name, visibility settings, and (for Work) organization membership. Personas are chosen by the user but constrained by the app, see rule 2 below.
+4. **Pairwise identifiers by default.** Each app sees a different, stable subject ID for the same person (OIDC "pairwise subject identifiers"). The dating app and the legal software cannot correlate users by ID, and the user can see and revoke which apps are connected. Linking personas is something the user opts into, never a default.
+
+### Two rules that keep this safe
+
+1. **A shared login must not become a shared blast radius.** Signing in to the account is not enough for high-stakes apps. Each app declares a minimum assurance level (the preset in the next section), and the account steps up when the user enters it: for example a passkey or TOTP for the legal app, even if the user normally signs in with a magic link. This is Kratos's `aal1`/`aal2` idea (<https://github.com/ory/kratos>) and Keycloak's step-up authentication (<https://github.com/keycloak/keycloak>).
+2. **The user's chosen purpose can raise protection but never lower the app's floor.** Picking "Personal" does not let someone use the Work app with weaker security. The app's preset is the minimum.
+
+### What this changes in the plan
+
+- **We must be an OIDC provider for first-party apps** (authorization code + PKCE, refresh rotation, pairwise subjects, consent screen). I previously listed this as out of scope. It is now P1. References: Ory Hydra (<https://github.com/ory/hydra>) and the Go OAuth2 SDK Ory Fosite (<https://github.com/ory/fosite>), both Apache-2.0, plus Keycloak for behavior. Verify licenses and maturity before choosing to build on Fosite or write a minimal provider.
+- **Native and offline clients** (the legal app) use PKCE and, where needed, the device-code flow, then hold a signed offline grant (section 8).
+- **Cross-app single sign-on session** lives on one auth domain with a secure cookie. Each app gets its own tokens.
+- **Account hub UI:** one page showing connected apps, personas, devices, and billing across all apps. Billing becomes **one customer, many subscriptions**, which is a real selling point.
+- **Risk to be honest about:** an account that unlocks everything is a single target. Passkeys, device recognition, step-up, and clear "revoke app" controls are therefore P1, not optional.
+
+## App presets (the security floor each app declares)
+
+Your apps differ mainly in how much is at stake if an account is compromised and how much friction users will tolerate. Instead of three products, we ship **one core with three presets**. Each app picks one as its floor, and the user's purpose selects the persona inside it. A preset is a named bundle of security policy, session rules, data handling, and UI defaults. It is the same idea as a Keycloak *realm* (<https://github.com/keycloak/keycloak>) or an Authentik *flow* set (<https://github.com/goauthentik/authentik>), but chosen with one line of config.
 
 ```go
 am, _ := goldaccountmanager.New(goldaccountmanager.Config{
@@ -164,19 +188,21 @@ This is a first-class requirement, not polish.
 ## What we are deliberately not building (yet)
 
 - Full SAML IdP and the Keycloak-style federation matrix (LDAP, Kerberos). Keycloak already does this well. We could interoperate with it instead.
-- Being an OAuth2/OIDC *provider* for third parties (Hydra's job). Our first apps are first-party. Revisit when another team needs to log in with GoldAccountManager.
+- Being an OAuth2/OIDC provider for **third-party** developers (open client registration, marketplace). We are an OIDC provider for your own first-party apps only. Revisit when outside teams need it.
 - Fraud and moderation systems. We expose hooks and signals only.
 - Multi-tenancy at Zitadel's depth. Organizations and groups yes, full tenant isolation later.
 
 ## Suggested build order
 
-1. **MVP (P0):** magic-link + password login, flows, sessions with rotation, roles, audit table, SQLite, demo mode, minimal UI. This alone can power a Utility app.
+1. **MVP (P0):** magic-link + password login, flows, sessions with rotation, roles, audit table, SQLite, demo mode, minimal UI. Plus the thinnest slice of the core offer: **one account, two demo apps, one-tap "Continue as…"** (first-party OIDC code + PKCE, a consent screen, and the purpose picker). If the two-app demo isn't compelling, nothing else matters yet.
 2. **Leisure readiness (P1):** SMS codes, passkeys, device recognition and alerts, profile visibility, field encryption, media references, consent, export/delete.
 3. **Work readiness (P1):** TOTP, step-up, organizations, hash-chained audit, impersonation, entitlement schema.
 4. **Offline and billing (P2):** signed offline grants and local unlock, Stripe adapter, per-seat billing.
 5. **Integrations (P2):** social login catalog, OIDC/SAML SSO, Casbin and Keto adapters.
 
 ## Open questions
+
+0. **Core offer:** (a) Should personas be unlinkable by default, as proposed (pairwise IDs, separate profiles), or do you want one shared profile across apps by default? (b) Is the purpose picked per account, per app, or both? I recommend per app, with a remembered default. (c) Will all apps live under one parent domain (simplest SSO) or on unrelated domains (needs full OIDC redirects everywhere)?
 
 1. **Offline architecture:** embedded Go library in a desktop app, or a client SDK in another language? What platforms does the legal app target?
 2. **Legal data:** is a hosted option planned, or must the account service itself be self-hosted by each firm? This changes the offline grant design.

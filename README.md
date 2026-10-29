@@ -4,6 +4,10 @@ A plug-and-play account management toolkit written in Go. Drop in authentication
 
 > **Status: early planning.** The design is in [PLAN.md](PLAN.md). Nothing below is released yet, and the API sketches are targets, not promises.
 
+## The core offer: sign up once
+
+One Gold account works across all your apps. The second app is a one-tap "Continue as…" instead of another sign-up form. Users say what they're using each app for (**Work**, **Personal**, or **Utility**) and get a matching profile and security level. Apps see separate pseudonymous IDs by default, so a dating app and a legal tool can't correlate the same person. See [FEATURES.md](FEATURES.md).
+
 ## Why GoldAccountManager
 
 - **Two ways to use it.** Import it as a Go library, or run the standalone `goldd` server.

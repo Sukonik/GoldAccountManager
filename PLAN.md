@@ -84,6 +84,8 @@ goldaccountmanager/
 
 **Exit:** `go test ./...` is green in CI on an empty but wired-up skeleton.
 
+> **Core offer (see [FEATURES.md](FEATURES.md)):** one account across many first-party apps, with a user-chosen purpose (Work / Personal / Utility). Phase 1 therefore includes a thin first-party OIDC provider (code + PKCE, consent screen, pairwise subject IDs) and a two-app demo, not just local login.
+
 ### Phase 1: Core auth (MVP)
 - [ ] Register, login, logout with email and password (argon2id, tunable params)
 - [ ] Sessions: opaque random tokens, stored hashed, cookie-based, rotation on login
