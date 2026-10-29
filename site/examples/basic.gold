@@ -1,0 +1,31 @@
+{
+ "format": "gold-packet",
+ "schemaVersion": 1,
+ "appId": "notes-demo",
+ "packetId": "pk_5rh8n3m0ppqxr",
+ "name": "Sam's notes",
+ "revisionId": "rv_qvqmeam54cad7",
+ "parentRevisionId": null,
+ "lineage": [
+  "rv_qvqmeam54cad7"
+ ],
+ "createdAt": "2026-10-29T12:00:00.000Z",
+ "savedAt": "2026-10-29T12:00:00.000Z",
+ "app": {
+  "name": "Notes Demo",
+  "version": "0.1.0"
+ },
+ "payload": {
+  "theme": "dark",
+  "fontSize": 16,
+  "pinned": [
+   "groceries",
+   "ideas"
+  ]
+ },
+ "attestations": [],
+ "checksum": {
+  "alg": "sha-256",
+  "value": "fae1b8d21bbd23ef84dc6b39e2f495a3d1036dc65d4849b16f03e38a4c63cf01"
+ }
+}

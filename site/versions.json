@@ -1,0 +1,9 @@
+[
+  {
+    "version": "0.1.0",
+    "name": "Phase 0: Packets",
+    "date": "2026-10-29",
+    "path": "v0.1/",
+    "summary": "Packet format, attestations, the goldd command line, Blue Bolt UI v0.1 and the first documentation pages."
+  }
+]

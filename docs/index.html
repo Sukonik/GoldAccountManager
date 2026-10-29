@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Your account is a file · GoldAccountManager</title>
+<meta name="description" content="GoldAccountManager is an open-source Go toolkit where a user&#39;s account is a portable file they own, with optional free-first email and phone confirmation.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/blue-bolt.css">
+<script src="assets/blue-bolt.js"></script>
+</head>
+<body>
+<a class="bb-skip" href="#main">Skip to content</a>
+<header class="bb-header">
+  <div class="bb-container bb-header__in">
+    <a class="bb-brand" href="index.html">
+      <span class="bb-brand__mark" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 32 32"><path d="M18.5 4 8 18h7l-1.5 10L24 14h-7z" fill="currentColor"/></svg></span>
+      GoldAccountManager
+    </a>
+    <nav class="bb-nav" aria-label="Main">
+      <a href="index.html" aria-current="page">Home</a>
+      <a href="packets.html">Packets</a>
+      <a href="verification.html">Verification</a>
+      <a href="history.html">History</a>
+      <a href="blue-bolt.html">Blue Bolt UI</a>
+      <a href="roadmap.html">Roadmap</a>
+      <a href="versions.html">Versions</a>
+      
+    </nav>
+    <button type="button" class="bb-theme" data-bb-theme-toggle>Theme: auto</button>
+  </div>
+</header>
+<main id="main">
+  <div class="bb-container">
+
+<section class="bb-hero">
+  <p><span class="bb-tag">Early development · Phase 0</span></p>
+  <h1>Your account is a file you own.</h1>
+  <p class="bb-lead">GoldAccountManager is an open-source Go toolkit for user accounts that start with no server, no sign-up and no cost, and add confirmation by email, phone or Google only when an app really needs it.</p>
+  <p class="bb-row">
+    <a class="bb-btn bb-btn--lg" href="packets.html">How packets work</a>
+    <a class="bb-btn bb-btn--ghost bb-btn--lg" href="https://github.com/Sukonik/GoldAccountManager">View on GitHub</a>
+  </p>
+</section>
+
+<h2>Three tiers, chosen per app</h2>
+<p>Each app decides how much server it needs. Every app is its own isolated account space: the same person using two apps has two unrelated accounts, and nothing links them.</p>
+<div class="bb-grid" style="--bb-min: 280px">
+  <article class="bb-card">
+    <h3>Tier 0 · Packet only</h3>
+    <p><span class="bb-tag">$0 to run</span></p>
+    <p>The account is a plain JSON file the user keeps. No sign-up, no database, no server. Good for utilities and tools.</p>
+  </article>
+  <article class="bb-card">
+    <h3>Tier 1 · Verified packet</h3>
+    <p><span class="bb-tag">Tiny service</span></p>
+    <p>The user confirms an email or phone once. A server signs a short <a href="verification.html">attestation</a> that travels inside the packet. No re-confirmation needed.</p>
+  </article>
+  <article class="bb-card">
+    <h3>Tier 2 · Hosted account</h3>
+    <p><span class="bb-tag">Planned</span></p>
+    <p>For apps whose server must hold the data, such as matching and messaging. The packet becomes export, backup and portability.</p>
+  </article>
+</div>
+
+<h2>Why a file?</h2>
+<ul>
+  <li><strong>Never locked out.</strong> A ban, an outage or an expired session cannot take away a file the user holds.</li>
+  <li><strong>Free to start.</strong> Tier 0 has no users to count and nothing to host.</li>
+  <li><strong>Fewer paid messages.</strong> SMS costs money everywhere. The best way to save is to <a href="verification.html">send fewer codes</a>.</li>
+  <li><strong>Private by design.</strong> Attestations carry a keyed hash, never the email address or phone number, and differ for each app.</li>
+  <li><strong>Offline friendly.</strong> A signed packet can be the offline grant for desktop software.</li>
+</ul>
+
+<h2>Try it</h2>
+<p>Needs Go 1.24 or newer.</p>
+<pre><code>git clone https://github.com/Sukonik/GoldAccountManager
+cd GoldAccountManager
+go run ./cmd/goldd packet new -app notes-demo -name "Sam's notes" -o sam.gold
+go run ./cmd/goldd packet check -app notes-demo sam.gold</code></pre>
+
+<div class="bb-notice bb-notice--warn">
+  <strong>Honest status</strong>
+  <p>This is Phase 0: the packet format, the attestation code and a small command line. There is no server, no web sign-in and no hosted tier yet. See the <a href="roadmap.html">roadmap</a>.</p>
+</div>
+
+<p>The idea comes from <a href="history.html">Payout Lab</a>, a no-sign-up dividend tracker whose portfolio is a file. The interface is <a href="blue-bolt.html">Blue Bolt UI</a>.</p>
+
+  </div>
+</main>
+<footer class="bb-footer">
+  <div class="bb-container">
+    <p>GoldAccountManager is open source under the <a href="https://github.com/Sukonik/GoldAccountManager/blob/main/LICENSE">Mozilla Public License 2.0</a>.
+    The UI is <a href="blue-bolt.html">Blue Bolt UI</a>. <a href="https://github.com/Sukonik/GoldAccountManager">Source on GitHub</a>.
+    Site version <a href="versions.html">0.1.0</a>.</p>
+  </div>
+</footer>
+</body>
+</html>

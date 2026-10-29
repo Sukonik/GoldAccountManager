@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>History: from Payout Lab · GoldAccountManager</title>
+<meta name="description" content="How the packet idea started in Payout Lab, what carried over to Gold packets, and what changed.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/blue-bolt.css">
+<script src="assets/blue-bolt.js"></script>
+</head>
+<body>
+<a class="bb-skip" href="#main">Skip to content</a>
+<header class="bb-header">
+  <div class="bb-container bb-header__in">
+    <a class="bb-brand" href="index.html">
+      <span class="bb-brand__mark" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 32 32"><path d="M18.5 4 8 18h7l-1.5 10L24 14h-7z" fill="currentColor"/></svg></span>
+      GoldAccountManager
+    </a>
+    <nav class="bb-nav" aria-label="Main">
+      <a href="index.html">Home</a>
+      <a href="packets.html">Packets</a>
+      <a href="verification.html">Verification</a>
+      <a href="history.html" aria-current="page">History</a>
+      <a href="blue-bolt.html">Blue Bolt UI</a>
+      <a href="roadmap.html">Roadmap</a>
+      <a href="versions.html">Versions</a>
+      
+    </nav>
+    <button type="button" class="bb-theme" data-bb-theme-toggle>Theme: auto</button>
+  </div>
+</header>
+<main id="main">
+  <div class="bb-container">
+
+<h1>History: from Payout Lab</h1>
+<p class="bb-lead bb-muted">The packet is not a new idea. It was proven first in <a href="https://github.com/Sukonik/payout-lab">Payout Lab</a>, a free, no-sign-up dividend portfolio tracker.</p>
+
+<h2>What Payout Lab proved</h2>
+<p>Payout Lab has no accounts and no server. The site is static, runs on GitHub Pages for $0 and keeps everything in the browser. The user's portfolio is a <strong>packet</strong>, a <code>.payout</code> file: plain JSON with holdings, settings and saved reports. Open it on any device to continue. It was the first time the "account is a file you own" idea ran for real users.</p>
+
+<h3>Timeline</h3>
+<div class="bb-scroll"><table>
+<thead><tr><th>Release</th><th>Date</th><th>What it added</th></tr></thead>
+<tbody>
+<tr><td>V1</td><td>baseline</td><td>The first no-signup tracker. Preserved as a build so old links keep working.</td></tr>
+<tr><td><a href="https://github.com/Sukonik/payout-lab/pull/21">V2 · Portable Workspace</a></td><td>2026-10-13</td><td><strong>Packets are introduced</strong>: the <code>.payout</code> file, revision lineage, checksums, per-value data provenance, CSV import and "Continue".</td></tr>
+<tr><td><a href="https://github.com/Sukonik/payout-lab/pull/28">V3 · Access &amp; Receipts</a></td><td>2026-10-13</td><td>Saved reports, workspace bookmarks, snapshot links (data inside the URL fragment) and <a href="https://github.com/Sukonik/payout-lab/pull/29">QR cards</a>.</td></tr>
+<tr><td>V4 · Splits</td><td>2026-10-14</td><td>A stock-split ledger and what-if tools. The packet format was already stable.</td></tr>
+</tbody></table></div>
+<p class="bb-muted">Source: the Payout Lab README and release notes. Its packet format is documented in <a href="https://github.com/Sukonik/payout-lab/blob/main/docs/packet-format.md">docs/packet-format.md</a>.</p>
+
+<h2>What carried over</h2>
+<ul>
+  <li><strong>Plain JSON, owned by the user</strong>, with the same honest limits stated up front: not encrypted, and a device copy is not a backup.</li>
+  <li><strong>Random identity labels</strong> and a revision <strong>lineage</strong> that classifies copies as identical, newer, older or diverged. No silent last-write-wins.</li>
+  <li><strong>Safe parsing</strong>: size limits, whitelisted fields, bounded values, nothing executed.</li>
+  <li><strong>The canonical-JSON SHA-256 checksum</strong>. The Go port is tested against vectors produced by Payout Lab's JavaScript, so a checksum computed in either language matches.</li>
+  <li><strong>A design system as a small CSS file</strong>: Payout Lab's Green Ion theme became the starting point for <a href="blue-bolt.html">Blue Bolt UI</a>.</li>
+</ul>
+
+<h2>What changed</h2>
+<div class="bb-scroll"><table>
+<thead><tr><th></th><th>Payout Lab packet</th><th>Gold packet</th></tr></thead>
+<tbody>
+<tr><td>Language</td><td>JavaScript, in the browser</td><td>Go for the core and services, with a JavaScript reader planned for the browser</td></tr>
+<tr><td>File</td><td><code>.payout</code>, format <code>payout-packet</code></td><td><code>.gold</code>, format <code>gold-packet</code></td></tr>
+<tr><td>Identity</td><td><code>portfolioId</code> (<code>pf_</code>)</td><td><code>packetId</code> (<code>pk_</code>) plus <code>appId</code></td></tr>
+<tr><td>Content</td><td>Typed fields: holdings, settings, snapshots</td><td>A generic <code>payload</code> that each app validates itself</td></tr>
+<tr><td>Isolation</td><td>One app</td><td>A packet only opens in the app it was made for</td></tr>
+<tr><td>Trust</td><td>Checksum only</td><td>Checksum plus <strong>signed attestations</strong> for confirmed email, phone or device</td></tr>
+<tr><td>Field names</td><td>Exact match in JavaScript</td><td>Case-variant names are rejected, after fuzzing found a parser mismatch in Go</td></tr>
+</tbody></table></div>
+
+<h2>Not ported yet</h2>
+<p>Payout Lab's snapshot links, QR cards, saved-report receipts and CSV import are not part of Phase 0. Encrypted packets and passkey or password-manager unlock keys are on both projects' roadmaps.</p>
+
+  </div>
+</main>
+<footer class="bb-footer">
+  <div class="bb-container">
+    <p>GoldAccountManager is open source under the <a href="https://github.com/Sukonik/GoldAccountManager/blob/main/LICENSE">Mozilla Public License 2.0</a>.
+    The UI is <a href="blue-bolt.html">Blue Bolt UI</a>. <a href="https://github.com/Sukonik/GoldAccountManager">Source on GitHub</a>.
+    Site version <a href="versions.html">0.1.0</a>.</p>
+  </div>
+</footer>
+</body>
+</html>

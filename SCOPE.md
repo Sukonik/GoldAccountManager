@@ -101,6 +101,16 @@ Research in [RESEARCH.md](RESEARCH.md) found no engine that makes phone-first fr
 
 **Decision 7 (proposed): the free verification ladder.** Confirm by the cheapest method the user already has: verify later, Google, email (user-sent or magic link), Telegram contact share, WhatsApp (user-initiated), and paid SMS only as a capped fallback that is off on free plans. After any success the server signs an attestation, and a passkey avoids repeat codes. Details, checked facts and open risks: [RESEARCH.md](RESEARCH.md) section 6.
 
+### Decisions 6-8 (owner), recorded 2026-10-29
+
+- **Go stays** as the implementation language, **with front-end code alongside it**: Go for the core and services, plain
+  HTML/CSS/JavaScript for the docs site and the browser packet reader.
+- **Blue Bolt UI** is the name of the interface and docs design system. It is built on the Green Ion approach from Payout Lab,
+  with ideas from oat and Carbon, and GoldBrief's UI/UX patterns for later updates.
+- **The documentation site is versioned.** The main address is always the latest, and each release is preserved at its own
+  path (`/v0.1/`), as Payout Lab does. The README highlights every version.
+- **Decision 7 (verification ladder) is accepted** as the plan for Phase 1 channels.
+
 ## Quotas: the free-tier feature
 
 Every app has a plan with limits Gold enforces:

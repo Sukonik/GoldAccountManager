@@ -1,0 +1,10 @@
+# Go
+*.test
+*.out
+coverage.out
+/goldd
+/sitegen
+# Local
+.DS_Store
+*.gold
+!site/examples/*.gold

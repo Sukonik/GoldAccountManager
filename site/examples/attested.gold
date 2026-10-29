@@ -1,0 +1,42 @@
+{
+ "format": "gold-packet",
+ "schemaVersion": 1,
+ "appId": "notes-demo",
+ "packetId": "pk_5rh8n3m0ppqxr",
+ "name": "Sam's notes",
+ "revisionId": "rv_ba9m8znr3v9a5",
+ "parentRevisionId": "rv_qvqmeam54cad7",
+ "lineage": [
+  "rv_qvqmeam54cad7",
+  "rv_ba9m8znr3v9a5"
+ ],
+ "createdAt": "2026-10-29T12:00:00.000Z",
+ "savedAt": "2026-10-29T13:00:00.000Z",
+ "app": {
+  "name": "Notes Demo",
+  "version": "0.1.0"
+ },
+ "payload": {
+  "theme": "dark",
+  "fontSize": 16,
+  "pinned": [
+   "groceries",
+   "ideas"
+  ]
+ },
+ "attestations": [
+  {
+   "kind": "email",
+   "method": "email-reply",
+   "subject": "5495abb52a557a70045dc477d3baad310f1e84e9634ea29245805484a743d21f",
+   "issuedAt": "2026-10-29T12:00:00.000Z",
+   "expiresAt": "2027-10-29T12:00:00.000Z",
+   "keyId": "docs-demo-1",
+   "signature": "g8Es5lMiFx7xVCeE30axkPXA6BKTbAi8cHE4oKT5szwUVnZqIs_gWoYLELTgHsAits6EDhN7Mgudo7DGbUnfAA"
+  }
+ ],
+ "checksum": {
+  "alg": "sha-256",
+  "value": "840edb950ab2c30c73eb0d2e9c53cf371046fe81260afeb0f1428310a6bffb87"
+ }
+}

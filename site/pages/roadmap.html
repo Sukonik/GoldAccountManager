@@ -1,0 +1,40 @@
+<!--meta title="Roadmap" nav="Roadmap" order="6" desc="What is done, what is next, and what is deliberately left out of GoldAccountManager's first version."-->
+<h1>Roadmap</h1>
+<p class="bb-lead bb-muted">Small first, with every later feature fitting behind an interface.</p>
+
+<h2>Phase 0 · Foundations <span class="bb-tag">done</span></h2>
+<ul>
+  <li>Go module, CI, linting and a vulnerability scan.</li>
+  <li><code>packet</code>: the format, safe parsing, revision comparison, canonical-JSON checksums compatible with Payout Lab.</li>
+  <li><code>verify</code>: keyed subjects, signed attestations, a demo confirmation channel.</li>
+  <li><code>goldd packet new</code> and <code>goldd packet check</code>.</li>
+  <li>Fuzz testing, which already found two real parser bugs.</li>
+  <li>This documentation site and <a href="blue-bolt.html">Blue Bolt UI</a>.</li>
+</ul>
+
+<h2>Phase 1 · Confirmation and sessions <span class="bb-tag">next</span></h2>
+<ul>
+  <li>Real channels: email magic link, then email reply, then Google sign-in.</li>
+  <li>A small server that issues attestations, with per-app quotas and rate limits.</li>
+  <li>Long sessions with refresh rotation and a grace window, so good users are not logged out by a flaky network.</li>
+  <li>A browser packet reader in JavaScript, following the same spec.</li>
+  <li>Demo mode with two seeded apps.</li>
+</ul>
+
+<h2>Phase 2 and later</h2>
+<ul>
+  <li>Encrypted packets with a passkey-derived key. This must land before any private data uses packets.</li>
+  <li>Passkeys (WebAuthn), Telegram and WhatsApp channels, and a paid SMS channel behind hard caps.</li>
+  <li>A hosted tier for apps that need server-side data.</li>
+  <li>Signed offline grants for desktop software.</li>
+  <li>Per-app plans, free-tier user limits and billing.</li>
+</ul>
+
+<h2>Deliberately not included</h2>
+<ul>
+  <li>One account shared across apps. Each app is isolated by design.</li>
+  <li>Acting as a sign-in provider for outside developers.</li>
+  <li>A full SAML and enterprise single sign-on stack. Use a project like Keycloak for that.</li>
+</ul>
+
+<p>The longer planning notes are in the repository: <a href="https://github.com/Sukonik/GoldAccountManager/blob/main/SCOPE.md">SCOPE.md</a>, <a href="https://github.com/Sukonik/GoldAccountManager/blob/main/FEATURES.md">FEATURES.md</a>, <a href="https://github.com/Sukonik/GoldAccountManager/blob/main/PLAN.md">PLAN.md</a> and <a href="https://github.com/Sukonik/GoldAccountManager/blob/main/RESEARCH.md">RESEARCH.md</a>.</p>

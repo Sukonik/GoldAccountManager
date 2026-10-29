@@ -6,7 +6,7 @@
 
 **See also:** [FEATURES.md](FEATURES.md) for the feature catalog, app presets, and per-feature upstream references.
 
-**Status:** planning. Nothing is implemented yet. Everything below is a proposal to react to.
+**Status:** Phase 0 is built (packet format, attestations, `goldd`, docs site, Blue Bolt UI). See the README and the roadmap on the docs site. Nothing is implemented yet. Everything below is a proposal to react to.
 
 ## Principles
 

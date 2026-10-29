@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - name: Format
+        run: test -z "$(gofmt -l .)" || (gofmt -d . && exit 1)
+      - name: Vet
+        run: go vet ./...
+      - name: Test with the race detector
+        run: go test -race -count=1 ./...
+      - name: Fuzz the packet parser briefly
+        run: go test ./packet -run '^$' -fuzz FuzzParse -fuzztime 20s
+      - name: Docs are up to date
+        run: go run ./cmd/sitegen -check
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - uses: golangci/golangci-lint-action@v8
+        with:
+          version: latest
+
+  vulncheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - name: govulncheck
+        run: go run golang.org/x/vuln/cmd/govulncheck@latest ./...
