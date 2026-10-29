@@ -94,6 +94,10 @@ Because SMS is the real cost on every platform, the per-app SMS cap and country 
 
 **To verify before building:** Supabase's current free-project count, which SMS provider its phone auth needs and who pays, and how idle-pausing affects a live app.
 
+### Decision 5 (proposed, awaiting owner): packet-first, tiered accounts
+
+Research in [RESEARCH.md](RESEARCH.md) found no engine that makes phone-first free, and that `payout-lab` already proves a lighter model: **the account is a file the user owns**. Proposal: three tiers per app: **0** packet only ($0, no server), **1** packet plus a tiny phone/email verification service, **2** hosted account (Better Auth or similar). Hosted engines stay behind the `AuthEngine` interface. This may also change the implementation language from Go to JavaScript/TypeScript, which is Decision 6, pending the owner's answer.
+
 ## Quotas: the free-tier feature
 
 Every app has a plan with limits Gold enforces:
