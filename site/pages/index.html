@@ -1,11 +1,12 @@
-<!--meta title="Your account is a file" nav="Home" order="1" desc="GoldAccountManager is an open-source Go toolkit where a user's account is a portable file they own, with optional free-first email and phone confirmation."-->
+<!--meta title="Your account is a file" nav="Home" icon="🏠" order="1" desc="GoldAccountManager is an open-source Go toolkit where a user's account is a portable file they own, with optional free-first email and phone confirmation."-->
 <section class="bb-hero">
-  <p><span class="bb-tag">Early development · Phase 0</span></p>
+  <p><span class="bb-tag">Early development</span></p>
   <h1>Your account is a file you own.</h1>
   <p class="bb-lead">GoldAccountManager is an open-source Go toolkit for user accounts that start with no server, no sign-up and no cost, and add confirmation by email, phone or Google only when an app really needs it.</p>
   <p class="bb-row">
-    <a class="bb-btn bb-btn--lg" href="packets.html">How packets work</a>
-    <a class="bb-btn bb-btn--ghost bb-btn--lg" href="https://github.com/Sukonik/GoldAccountManager">View on GitHub</a>
+    <a class="bb-btn bb-btn--lg" href="try.html">Try it in your browser</a>
+    <a class="bb-btn bb-btn--ghost bb-btn--lg" href="packets.html">How packets work</a>
+    <a class="bb-btn bb-btn--ghost bb-btn--lg" href="https://github.com/Sukonik/GoldAccountManager">GitHub</a>
   </p>
 </section>
 
@@ -38,7 +39,19 @@
   <li><strong>Offline friendly.</strong> A signed packet can be the offline grant for desktop software.</li>
 </ul>
 
-<h2>Try it</h2>
+<h2>Every version of this site</h2>
+<p>The latest version is always at the main address. Each release is also kept at its own address, so links to an older version keep working.</p>
+<div class="bb-grid" style="--bb-min: 300px">
+{{range .Versions}}  <article class="bb-card">
+    <h3>{{.Version}} · {{.Name}}</h3>
+    <p>{{if .Current}}<span class="bb-tag">Latest</span> {{end}}<span class="bb-tag">{{.Date}}</span></p>
+    <p>{{.Summary}}</p>
+    <p class="bb-row"><a href="{{$.Root}}index.html">Open latest</a><a href="{{$.Root}}{{.Path}}index.html">Preserved at /{{.Path}}</a></p>
+  </article>
+{{end}}</div>
+<p><a href="versions.html">All versions and release notes</a></p>
+
+<h2>From the command line</h2>
 <p>Needs Go 1.24 or newer.</p>
 <pre><code>git clone https://github.com/Sukonik/GoldAccountManager
 cd GoldAccountManager
@@ -47,7 +60,7 @@ go run ./cmd/goldd packet check -app notes-demo sam.gold</code></pre>
 
 <div class="bb-notice bb-notice--warn">
   <strong>Honest status</strong>
-  <p>This is Phase 0: the packet format, the attestation code and a small command line. There is no server, no web sign-in and no hosted tier yet. See the <a href="roadmap.html">roadmap</a>.</p>
+  <p>This is early development: the packet format, signed attestations, a command line and the browser demo. There is no server, no web sign-in and no hosted tier yet. See the <a href="roadmap.html">roadmap</a>.</p>
 </div>
 
 <p>The idea comes from <a href="history.html">Payout Lab</a>, a no-sign-up dividend tracker whose portfolio is a file. The interface is <a href="blue-bolt.html">Blue Bolt UI</a>.</p>

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Roadmap · GoldAccountManager</title>
+<meta name="description" content="What is done, what is next, and what is deliberately left out of GoldAccountManager&#39;s first version.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/blue-bolt.css">
+<script src="assets/blue-bolt.js"></script>
+</head>
+<body>
+<a class="bb-skip" href="#main">Skip to content</a>
+<header class="bb-header">
+  <div class="bb-container bb-header__in">
+    <a class="bb-brand" href="index.html">
+      <span class="bb-brand__mark" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 32 32"><path d="M18.5 4 8 18h7l-1.5 10L24 14h-7z" fill="currentColor"/></svg></span>
+      GoldAccountManager
+    </a>
+    <nav class="bb-nav" aria-label="Main">
+      <a href="index.html">Home</a>
+      <a href="try.html">Try it</a>
+      <a href="packets.html">Packets</a>
+      <a href="verification.html">Verification</a>
+      <a href="history.html">History</a>
+      <a href="blue-bolt.html">Blue Bolt UI</a>
+      <a href="roadmap.html" aria-current="page">Roadmap</a>
+      
+    </nav>
+    <button type="button" class="bb-theme" data-bb-theme-toggle>Theme: auto</button>
+  </div>
+</header>
+<main id="main">
+  <div class="bb-container">
+
+<h1>Roadmap</h1>
+<p class="bb-lead bb-muted">Small first, with every later feature fitting behind an interface.</p>
+
+<h2>Phase 0 · Foundations <span class="bb-tag">done</span></h2>
+<ul>
+  <li>Go module, CI, linting and a vulnerability scan.</li>
+  <li><code>packet</code>: the format, safe parsing, revision comparison, canonical-JSON checksums compatible with Payout Lab.</li>
+  <li><code>verify</code>: keyed subjects, signed attestations, a demo confirmation channel.</li>
+  <li><code>goldd packet new</code> and <code>goldd packet check</code>.</li>
+  <li>Fuzz testing, which already found two real parser bugs.</li>
+  <li>This documentation site and <a href="blue-bolt.html">Blue Bolt UI</a>.</li>
+  <li>A <strong>browser packet reader</strong> in JavaScript and the <a href="try.html">Try it</a> demo. Both readers run the same shared test cases, so they agree on what a valid packet is.</li>
+  <li>Release automation: one command publishes a site version, keeps a preserved copy and regenerates the README tables.</li>
+</ul>
+
+<h2>Phase 1 · Confirmation and sessions <span class="bb-tag">next</span></h2>
+<ul>
+  <li>Real channels: email magic link, then email reply, then Google sign-in.</li>
+  <li>A small server that issues attestations, with per-app quotas and rate limits.</li>
+  <li>Long sessions with refresh rotation and a grace window, so good users are not logged out by a flaky network.</li>
+  <li>Demo mode with two seeded apps.</li>
+</ul>
+
+<h2>Phase 2 and later</h2>
+<ul>
+  <li>Encrypted packets with a passkey-derived key. This must land before any private data uses packets.</li>
+  <li>Passkeys (WebAuthn), Telegram and WhatsApp channels, and a paid SMS channel behind hard caps.</li>
+  <li>A hosted tier for apps that need server-side data.</li>
+  <li>Signed offline grants for desktop software.</li>
+  <li>Per-app plans, free-tier user limits and billing.</li>
+</ul>
+
+<h2>Deliberately not included</h2>
+<ul>
+  <li>One account shared across apps. Each app is isolated by design.</li>
+  <li>Acting as a sign-in provider for outside developers.</li>
+  <li>A full SAML and enterprise single sign-on stack. Use a project like Keycloak for that.</li>
+</ul>
+
+<p>The longer planning notes are in the repository: <a href="https://github.com/Sukonik/GoldAccountManager/blob/main/SCOPE.md">SCOPE.md</a>, <a href="https://github.com/Sukonik/GoldAccountManager/blob/main/FEATURES.md">FEATURES.md</a>, <a href="https://github.com/Sukonik/GoldAccountManager/blob/main/PLAN.md">PLAN.md</a> and <a href="https://github.com/Sukonik/GoldAccountManager/blob/main/RESEARCH.md">RESEARCH.md</a>.</p>
+
+  </div>
+</main>
+<footer class="bb-footer">
+  <div class="bb-container">
+    <p>GoldAccountManager is open source under the <a href="https://github.com/Sukonik/GoldAccountManager/blob/main/LICENSE">Mozilla Public License 2.0</a>.
+    The UI is <a href="blue-bolt.html">Blue Bolt UI</a>. <a href="https://github.com/Sukonik/GoldAccountManager">Source on GitHub</a>.
+    Site version <a href="versions.html">0.2.0</a>.</p>
+  </div>
+</footer>
+</body>
+</html>

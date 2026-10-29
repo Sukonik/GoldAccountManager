@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Try it in your browser · GoldAccountManager</title>
+<meta name="description" content="Make a Gold packet in your browser, save it as a file, and open it again. Nothing is uploaded and there is no sign-up.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/blue-bolt.css">
+<script src="assets/blue-bolt.js"></script>
+</head>
+<body>
+<a class="bb-skip" href="#main">Skip to content</a>
+<header class="bb-header">
+  <div class="bb-container bb-header__in">
+    <a class="bb-brand" href="index.html">
+      <span class="bb-brand__mark" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 32 32"><path d="M18.5 4 8 18h7l-1.5 10L24 14h-7z" fill="currentColor"/></svg></span>
+      GoldAccountManager
+    </a>
+    <nav class="bb-nav" aria-label="Main">
+      <a href="index.html">Home</a>
+      <a href="try.html" aria-current="page">Try it</a>
+      <a href="packets.html">Packets</a>
+      <a href="verification.html">Verification</a>
+      <a href="history.html">History</a>
+      <a href="blue-bolt.html">Blue Bolt UI</a>
+      <a href="roadmap.html">Roadmap</a>
+      
+    </nav>
+    <button type="button" class="bb-theme" data-bb-theme-toggle>Theme: auto</button>
+  </div>
+</header>
+<main id="main">
+  <div class="bb-container">
+
+<h1>Try it in your browser</h1>
+<p class="bb-lead bb-muted">Make a packet, change it, save it as a file, and open it again. This is the whole idea of GoldAccountManager, running on this page.</p>
+
+<div class="bb-notice bb-notice--ok">
+  <strong>Nothing leaves this page</strong>
+  <p>There is no server behind this demo and no sign-up. The packet lives in your browser's memory until you download it, and the page makes no network requests with your data.</p>
+</div>
+
+<noscript><div class="bb-notice bb-notice--warn"><strong>JavaScript is off</strong><p>This demo needs JavaScript to read and write packets. The <a href="packets.html">Packets page</a> explains the format without it.</p></div></noscript>
+
+<h2 id="make">1 · Make a packet</h2>
+<form id="make-form" class="bb-stack" style="--bb-gap: var(--bb-space-04); max-width: 560px" novalidate>
+  <label for="app-id">App id
+    <input id="app-id" value="notes-demo" autocomplete="off" spellcheck="false" aria-describedby="app-id-hint">
+    <small id="app-id-hint" class="bb-muted">Lowercase letters, digits and hyphens. A packet only opens in the app it was made for.</small>
+  </label>
+  <label for="name">Name for this account
+    <input id="name" value="Sam's notes" autocomplete="off" maxlength="200">
+  </label>
+  <label for="payload">Data (JSON object)
+    <textarea id="payload" rows="6" spellcheck="false" aria-describedby="make-error">{
+  "note": "hello",
+  "theme": "dark"
+}</textarea>
+  </label>
+  <p id="make-error" role="alert" style="color: var(--bb-support-error); margin: 0" hidden></p>
+  <div class="bb-row">
+    <button type="submit" id="new-btn">Make a new packet</button>
+    <button type="button" id="rev-btn" class="bb-btn--ghost" disabled>Save my edits as a new revision</button>
+    <button type="button" id="dl-btn" class="bb-btn--soft" disabled>Download .gold file</button>
+  </div>
+</form>
+
+<div id="current" class="bb-card" style="margin-top: var(--bb-space-05); max-width: 640px" hidden>
+  <h3 style="margin-top: 0">Your packet right now</h3>
+  <dl id="current-list" class="bb-kv"></dl>
+</div>
+
+<h2 id="open">2 · Open a packet</h2>
+<p>Pick a <code>.gold</code> file. It is opened <strong>as the app id above</strong>, so a packet made for another app is refused. Or try a real one made by the Go code:</p>
+<div class="bb-row">
+  <label for="open-file" class="bb-btn bb-btn--ghost" style="cursor: pointer">Choose a file…</label>
+  <input id="open-file" type="file" accept=".gold,.json,application/json" class="bb-sr">
+  <button type="button" id="example-btn" class="bb-btn--soft">Open the signed example</button>
+  <a href="examples/attested.gold" download>Download the example</a>
+</div>
+<div id="result" aria-live="polite" style="margin-top: var(--bb-space-05); max-width: 720px"></div>
+
+<h2>Things to try</h2>
+<ol>
+  <li><strong>Round trip.</strong> Make a packet, download it, then open the file. It should say <em>identical</em>.</li>
+  <li><strong>History.</strong> Edit the data, press <em>Save my edits as a new revision</em>, then open the file you downloaded earlier. It is now <em>older</em>, and the page offers a separate copy instead of overwriting.</li>
+  <li><strong>Divergence.</strong> Download, save a revision, then open the file after making a different revision from the same starting point. Both changed, so it says <em>diverged</em>.</li>
+  <li><strong>Tampering.</strong> Open a downloaded file in a text editor, change the name, save it, and open it here. You get a checksum warning, and the page tells you that is not proof of who edited it.</li>
+  <li><strong>Isolation.</strong> Change the app id above to <code>other-app</code> and open the same file. It is refused.</li>
+</ol>
+
+<h2>What this page does not do</h2>
+<ul>
+  <li>It <strong>does not check attestation signatures</strong>. Browsers differ in Ed25519 support, and the server or Go code is the right place to trust a signature. Here an attestation is only checked for shape.</li>
+  <li>The packet is <strong>not encrypted</strong>. Do not put anything private in this demo.</li>
+  <li>This reader is a second implementation of the format. It is checked against the Go reader on the same shared test cases, see <a href="packets.html">Packets</a>.</li>
+</ul>
+
+<script src="assets/gold-packet.js"></script>
+<script src="assets/try.js"></script>
+
+  </div>
+</main>
+<footer class="bb-footer">
+  <div class="bb-container">
+    <p>GoldAccountManager is open source under the <a href="https://github.com/Sukonik/GoldAccountManager/blob/main/LICENSE">Mozilla Public License 2.0</a>.
+    The UI is <a href="blue-bolt.html">Blue Bolt UI</a>. <a href="https://github.com/Sukonik/GoldAccountManager">Source on GitHub</a>.
+    Site version <a href="versions.html">0.2.0</a>.</p>
+  </div>
+</footer>
+</body>
+</html>

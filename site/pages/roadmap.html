@@ -1,4 +1,4 @@
-<!--meta title="Roadmap" nav="Roadmap" order="6" desc="What is done, what is next, and what is deliberately left out of GoldAccountManager's first version."-->
+<!--meta title="Roadmap" nav="Roadmap" icon="🗺️" order="7" desc="What is done, what is next, and what is deliberately left out of GoldAccountManager's first version."-->
 <h1>Roadmap</h1>
 <p class="bb-lead bb-muted">Small first, with every later feature fitting behind an interface.</p>
 
@@ -10,6 +10,8 @@
   <li><code>goldd packet new</code> and <code>goldd packet check</code>.</li>
   <li>Fuzz testing, which already found two real parser bugs.</li>
   <li>This documentation site and <a href="blue-bolt.html">Blue Bolt UI</a>.</li>
+  <li>A <strong>browser packet reader</strong> in JavaScript and the <a href="try.html">Try it</a> demo. Both readers run the same shared test cases, so they agree on what a valid packet is.</li>
+  <li>Release automation: one command publishes a site version, keeps a preserved copy and regenerates the README tables.</li>
 </ul>
 
 <h2>Phase 1 · Confirmation and sessions <span class="bb-tag">next</span></h2>
@@ -17,7 +19,6 @@
   <li>Real channels: email magic link, then email reply, then Google sign-in.</li>
   <li>A small server that issues attestations, with per-app quotas and rate limits.</li>
   <li>Long sessions with refresh rotation and a grace window, so good users are not logged out by a flaky network.</li>
-  <li>A browser packet reader in JavaScript, following the same spec.</li>
   <li>Demo mode with two seeded apps.</li>
 </ul>
 

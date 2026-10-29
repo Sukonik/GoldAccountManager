@@ -9,11 +9,15 @@ An open-source **Go** toolkit for user accounts that start with **no server, no 
 ![License](https://img.shields.io/badge/license-MPL--2.0-blue)
 ![Status](https://img.shields.io/badge/status-Phase%200%20%C2%B7%20early%20development-orange)
 
-> 🚧 **Honest status:** this is **Phase 0**. The packet format, signed attestations, a small command line and the documentation site are built and tested. There is **no server, no web sign-in and no hosted tier yet**, and nothing here has had an external security review. See the [roadmap](#-roadmap).
+> 🚧 **Honest status:** early development. The packet format, signed attestations, a command line, a browser reader with a [try-it demo](https://sukonik.github.io/GoldAccountManager/try.html), and the documentation site are built and tested. There is **no server, no web sign-in and no hosted tier yet**, and nothing here has had an external security review. See the [roadmap](#-roadmap).
+
+### 🧪 [Try it in your browser →](https://sukonik.github.io/GoldAccountManager/try.html)
+
+Make a packet, download it as a file, change it, and open it again. No sign-up, no server, nothing uploaded.
 
 ## 📑 Contents
 
-[🌐 Website and versions](#-website-and-versions) · [📦 What is a packet?](#-what-is-a-packet) · [🕰️ History: from Payout Lab](#️-history-from-payout-lab) · [🧱 Three tiers](#-three-tiers) · [✅ Free-first verification](#-free-first-verification) · [🧰 Use it from Go](#-use-it-from-go) · [💻 Command line](#-command-line) · [🎨 Blue Bolt UI](#-blue-bolt-ui) · [🧪 Quality checks](#-quality-checks) · [🗺️ Roadmap](#-roadmap) · [📚 All resources](#-all-resources) · [🗃️ Project layout](#️-project-layout) · [🛠️ Development](#️-development) · [🤝 Contributing](#-contributing)
+[🌐 Website and versions](#-website-and-versions) · [🧪 Try it](#-try-it-in-your-browser) · [📦 What is a packet?](#-what-is-a-packet) · [🕰️ History: from Payout Lab](#️-history-from-payout-lab) · [🧱 Three tiers](#-three-tiers) · [✅ Free-first verification](#-free-first-verification) · [🧰 Use it from Go](#-use-it-from-go) · [🌍 In the browser](#-in-the-browser) · [💻 Command line](#-command-line) · [🎨 Blue Bolt UI](#-blue-bolt-ui) · [🧪 Quality checks](#-quality-checks) · [🗺️ Roadmap](#-roadmap) · [📚 All resources](#-all-resources) · [🗃️ Project layout](#️-project-layout) · [🛠️ Development](#️-development) · [🤝 Contributing](#-contributing)
 
 ---
 
@@ -23,25 +27,46 @@ An open-source **Go** toolkit for user accounts that start with **no server, no 
 
 The main address always shows the **latest** version. Every release is also **preserved at its own path**, so old links keep working after the site moves on. A preserved build is the exact set of web files at release and does not update. This is the same approach Payout Lab uses.
 
+<!-- versions:start -->
 | Version | Released | What it covers | 🔗 Latest | 📌 Preserved |
 |---|---|---|---|---|
-| **0.1.0** · Phase 0: Packets ⭐ *current* | 2026-10-29 | Packet format, signed attestations, the `goldd` command line, Blue Bolt UI v0.1, and seven documentation pages | [Open](https://sukonik.github.io/GoldAccountManager/) | [`/v0.1/`](https://sukonik.github.io/GoldAccountManager/v0.1/) |
+| **0.2.0** · Browser reader and Try it ⭐ *current* | 2026-10-29 | A browser packet reader checked against the Go reader, the interactive Try it demo, every version on the home page, and one-command releases. | [Open](https://sukonik.github.io/GoldAccountManager/) | [`/v0.2/`](https://sukonik.github.io/GoldAccountManager/v0.2/index.html) |
+| **0.1.0** · Phase 0: Packets | 2026-10-29 | Packet format, attestations, the goldd command line, Blue Bolt UI v0.1 and the first documentation pages. | — | [`/v0.1/`](https://sukonik.github.io/GoldAccountManager/v0.1/index.html) |
+<!-- versions:end -->
 
 The site's own [Versions page](https://sukonik.github.io/GoldAccountManager/versions.html) lists every version and is generated from [`site/versions.json`](site/versions.json).
 
-**Pages in this version:**
+**Pages in this version** *(this table and the one above are generated, see [Releasing](#-development))*:
 
+<!-- pages:start -->
 | | Page | Source |
 |---|---|---|
 | 🏠 | [Home](https://sukonik.github.io/GoldAccountManager/) | [`site/pages/index.html`](site/pages/index.html) |
+| 🧪 | [Try it](https://sukonik.github.io/GoldAccountManager/try.html) | [`site/pages/try.html`](site/pages/try.html) |
 | 📦 | [Packets](https://sukonik.github.io/GoldAccountManager/packets.html) | [`site/pages/packets.html`](site/pages/packets.html) |
 | ✅ | [Verification](https://sukonik.github.io/GoldAccountManager/verification.html) | [`site/pages/verification.html`](site/pages/verification.html) |
 | 🕰️ | [History](https://sukonik.github.io/GoldAccountManager/history.html) | [`site/pages/history.html`](site/pages/history.html) |
 | 🎨 | [Blue Bolt UI](https://sukonik.github.io/GoldAccountManager/blue-bolt.html) | [`site/pages/blue-bolt.html`](site/pages/blue-bolt.html) |
 | 🗺️ | [Roadmap](https://sukonik.github.io/GoldAccountManager/roadmap.html) | [`site/pages/roadmap.html`](site/pages/roadmap.html) |
-| 🏷️ | [Versions](https://sukonik.github.io/GoldAccountManager/versions.html) | [`site/pages/versions.html`](site/pages/versions.html) |
+| 🏷️ | [Site versions](https://sukonik.github.io/GoldAccountManager/versions.html) | [`site/pages/versions.html`](site/pages/versions.html) |
+<!-- pages:end -->
 
 > ⚙️ **GitHub Pages setup:** the built site lives in [`docs/`](docs). In the repository's **Settings → Pages**, deploy from the branch that holds `docs/`, folder **`/docs`**. The site is plain static files (`docs/.nojekyll` is included), so there is no build step on GitHub.
+
+---
+
+## 🧪 Try it in your browser
+
+<https://sukonik.github.io/GoldAccountManager/try.html> is a working demo of the whole idea, with no server behind it:
+
+1. ✍️ **Make** a packet for an app id, with a name and some JSON data
+2. 💾 **Download** it as a `.gold` file
+3. 📂 **Open** it again. You are told if it is *identical*, *newer*, *older* or *diverged* from the one you are working on, and you are offered a separate copy instead of an overwrite
+4. 🔧 **Tamper** with the file in a text editor and open it: you get a checksum warning, and the page says why a checksum is not proof of who edited it
+5. 🏝️ **Change the app id** and open the same file: it is refused, which is the isolation rule in action
+6. 🔏 **Open the signed example** made by the Go code, to see an attestation
+
+🔒 The demo makes no network request with your data (a browser test checks this), and it builds its page with text only, so a hostile packet name can't inject markup or script.
 
 ---
 
@@ -75,6 +100,7 @@ A **packet** is one plain JSON file that is a user's account for **one app**: th
 - 🕵️ **Private by design.** Attestations carry a keyed hash, never the email or phone number, and differ for every app.
 - ✈️ **Offline friendly.** A signed packet can be the offline grant for desktop software.
 - 🏝️ **Isolated per app.** A packet only opens in the app it was made for.
+- 🌍 **Two readers, one format.** A Go reader (the reference) and a browser reader in JavaScript run the same shared test cases, so they agree on what a valid packet is.
 
 ### 🔎 How a packet is protected
 
@@ -234,6 +260,27 @@ if verify.Has(checker.Check(p, time.Now()), packet.KindEmail) {
 
 ---
 
+## 🌍 In the browser
+
+[`site/assets/gold-packet.js`](site/assets/gold-packet.js) is a dependency-free second implementation of the format that works in any modern browser and in Node. It reads, writes, compares and copies packets, and computes the same SHA-256 checksum as the Go code.
+
+```html
+<script src="assets/gold-packet.js"></script>
+<script>
+  const r = await GoldPacket.parse(text, { expectAppId: "notes-demo" });
+  if (r.ok) console.log(r.packet.name, r.warnings);
+  else console.log(r.error.code, r.error.message);
+</script>
+```
+
+| | |
+|---|---|
+| ✅ **Agrees with Go** | Both readers run [`packet/testdata/parity.json`](packet/testdata/parity.json): 99 parse cases plus checksum vectors from Payout Lab's JavaScript. A file one accepts, the other accepts, and a rejection has the same error code |
+| 🔨 **The tests can fail** | Early cases passed for the wrong reason (a renamed key fails twice over). The suite was repaired until each deliberate break of a rule in either reader was caught |
+| 🚫 **No signature checks** | Browsers differ in Ed25519 support, so attestations are checked for *shape* only. A server or the Go code decides whether to trust one |
+
+---
+
 ## 💻 Command line
 
 ```bash
@@ -289,6 +336,9 @@ No code was copied. Licenses are in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTIC
 | 🐛 **Fuzzing** (`FuzzParse`) | 🔧 Found **two real bugs**, both fixed and kept as regression tests: a crash on `"lineage": []`, and case-insensitive field names |
 | 🧹 `golangci-lint` (incl. `gosec`, `errorlint`, `revive`) | ✅ 0 issues |
 | 🛡️ `govulncheck` | ✅ **Libraries and `goldd`: clean on every Go version tried** (after removing `net/mail`, which had 3 reported issues, in favor of a small strict email validator). The docs build tool `sitegen` is affected by standard-library issues in `html/template` and `os` on older Go (8 on Go 1.24.7 and 1.25.1, 2 on 1.25.13) and is **clean on Go 1.26.9**. CI uses the latest stable Go |
+| 🤝 **Go ⇄ JavaScript parity** | ✅ 99 parse cases and 3 checksum vectors agree. Each rule was deliberately broken in each reader to prove a test catches it |
+| 🟢 `node --test` (browser reader) | ✅ Passing, 108 tests |
+| 🧭 Browser end-to-end ([`site/tests/e2e-try.mjs`](site/tests/e2e-try.mjs), run by hand, needs Playwright) | ✅ 21 checks: a file made in the browser is accepted by `goldd packet check`, a hostile name does not run or become markup, nothing leaves localhost, no overflow at 320, 390 and 1280 px |
 | 🔗 Site link checker | ✅ Every internal link and anchor resolves, one `h1` per page |
 | 🌐 Browser check | ✅ No overflow at 320, 390, 1280 px. Theme toggle works |
 
@@ -301,7 +351,8 @@ Go review checklists came from [samber/cc-skills-golang](https://github.com/samb
 | Phase | Status | Focus |
 |---|---|---|
 | **0 · Foundations** | ✅ Done | Packet format, attestations, `goldd`, CI, docs site, Blue Bolt UI |
-| **1 · Confirmation and sessions** | 🔜 Next | Real channels (magic link, reply email, Google), a small attestation server with per-app quotas and rate limits, long sessions with refresh rotation and a grace window, a JavaScript browser reader, demo mode |
+| **0.5 · Browser and automation** | ✅ Done | Browser packet reader checked against Go, the Try it demo, one-command site releases |
+| **1 · Confirmation and sessions** | 🔜 Next | Real channels (magic link, reply email, Google), a small attestation server with per-app quotas and rate limits, long sessions with refresh rotation and a grace window, demo mode |
 | **2 · Encryption and passkeys** | 📅 Planned | Passkey-encrypted packets (before any private data), WebAuthn, Telegram and WhatsApp channels, a capped paid SMS channel |
 | **3 · Hosted tier and offline** | 📅 Planned | Server-side accounts for data-heavy apps, signed offline grants, per-app plans and billing |
 
@@ -366,20 +417,22 @@ Go review checklists came from [samber/cc-skills-golang](https://github.com/samb
 ```
 GoldAccountManager/
 ├── packet/            # the packet format: parse, marshal, compare, canonical JSON
+│   └── testdata/      # parity.json: cases shared with the JavaScript reader
 ├── verify/            # keyed subjects, signed attestations, confirmation channels
 ├── cmd/
 │   ├── goldd/         # command line: packet new, packet check
 │   └── sitegen/       # builds the docs site from site/ into docs/
 ├── site/              # docs site sources
 │   ├── pages/         # page fragments
-│   ├── assets/        # Blue Bolt UI: blue-bolt.css, blue-bolt.js, favicon
+│   ├── assets/        # Blue Bolt UI, the browser packet reader (gold-packet.js), the demo (try.js)
+│   ├── tests/         # JavaScript tests and the browser end-to-end check
 │   ├── examples/      # real .gold files, kept valid by tests
 │   ├── layout.html    # shared page layout
 │   ├── VERSION        # current site version
 │   └── versions.json  # every released site version
 ├── docs/              # built site served by GitHub Pages, plus the specs
 │   └── v0.1/          # 📌 preserved build of site version 0.1.0
-├── .github/workflows/ # CI: tests, race detector, fuzz, lint, vulnerability scan, docs check
+├── .github/workflows/ # CI (Go, JavaScript, lint, vuln scan, docs check) and the release workflow
 └── *.md               # SCOPE, FEATURES, PLAN, RESEARCH, SECURITY, CONTRIBUTING, notices
 ```
 
@@ -391,13 +444,19 @@ GoldAccountManager/
 go test -race ./...                       # tests
 go vet ./... && golangci-lint run ./...   # static checks
 govulncheck ./...                         # known vulnerabilities
+node --test site/tests/packet.test.mjs    # browser reader vs the shared Go cases
 go test ./packet -run '^$' -fuzz FuzzParse -fuzztime 30s   # fuzz the parser
-go run ./cmd/sitegen                      # rebuild the docs site into docs/
-go run ./cmd/sitegen -check               # fail if docs/ is out of date (CI does this)
-go run ./cmd/sitegen -snapshot v0.2       # also write a preserved build, when releasing a site version
+go run ./cmd/sitegen                      # rebuild docs/ and the README tables
+go run ./cmd/sitegen -check               # fail if docs/ or the README tables are out of date (CI does this)
 ```
 
-🚢 **Releasing a site version:** bump [`site/VERSION`](site/VERSION), add an entry to [`site/versions.json`](site/versions.json), run `go run ./cmd/sitegen -snapshot vX.Y`, and commit `docs/`. Preserved folders are never edited afterwards. A test fails if a listed version has no preserved build.
+🚢 **Releasing a site version** is one command. It records the version in [`site/versions.json`](site/versions.json), rebuilds the latest site, writes a preserved copy under `docs/vX.Y/`, and regenerates the README's version and page tables:
+
+```bash
+go run ./cmd/sitegen release -version 0.2.0 -name "Short name" -summary "One sentence on what it covers."
+```
+
+It refuses a version that already exists or isn't newer, never overwrites a preserved folder, and puts `versions.json` back if anything fails. You can also run it from GitHub: **Actions → Release site version → Run workflow**, which pushes a `release/vX.Y.Z` branch for review. CI fails if `docs/` or the README tables are out of date, and a test fails if a listed version has no preserved build.
 
 ---
 

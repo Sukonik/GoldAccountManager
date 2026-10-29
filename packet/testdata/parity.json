@@ -1,0 +1,1261 @@
+{
+ "_about": "Shared by the Go reader (packet/parity_test.go) and the JavaScript reader (site/tests/packet.test.mjs). Each parse case starts from site/examples/attested.gold, applies ops (set, delete, rename, repeat), and says what a reader must do. Both implementations must agree.",
+ "canonical": [
+  {
+   "input": "{\"b\":1,\"a\":[1,2.5,-0,1e21,1e-7,0.000001,123456789012345680000,1.0,0.1],\"s\":\"x\"}",
+   "canon": "{\"a\":[1,2.5,0,1e+21,1e-7,0.000001,123456789012345680000,1,0.1],\"b\":1,\"s\":\"x\"}",
+   "sum": "3362096e6edc99bad0b9586283180991516c7d7631dc0ffefce2b70d1ca54fc7"
+  },
+  {
+   "input": "{\"z\":\"quote\\\" back\\\\ nl\\n tab\\t ctl\\u0001 <tag> & \\u2028 é 😀 del\\u007f\",\"n\":null,\"t\":true,\"f\":false,\"o\":{}}",
+   "canon": "{\"f\":false,\"n\":null,\"o\":{},\"t\":true,\"z\":\"quote\\\" back\\\\ nl\\n tab\\t ctl\\u0001 <tag> &   é 😀 del\"}",
+   "sum": "876a1454aca9825b5648413eed95cea56f6becc7abe557f9356935f2de277243"
+  },
+  {
+   "input": "{\"nested\":{\"b\":[{\"y\":2,\"x\":1}],\"a\":{}},\"e\":[],\"big\":9007199254740993,\"neg\":-1.5e-9}",
+   "canon": "{\"big\":9007199254740992,\"e\":[],\"neg\":-1.5e-9,\"nested\":{\"a\":{},\"b\":[{\"x\":1,\"y\":2}]}}",
+   "sum": "48016b4e0714f4443559f6e93ea273562c2e0b51509504c736be7e3958e47b05"
+  }
+ ],
+ "parse": [
+  {
+   "name": "valid, untouched",
+   "ops": [],
+   "expect": {
+    "ok": true,
+    "warnings": []
+   }
+  },
+  {
+   "name": "edited name breaks the checksum",
+   "ops": [
+    {
+     "set": "name",
+     "value": "Other"
+    }
+   ],
+   "expect": {
+    "ok": true,
+    "warnings": [
+     "checksum_mismatch"
+    ]
+   }
+  },
+  {
+   "name": "no checksum",
+   "ops": [
+    {
+     "delete": "checksum"
+    }
+   ],
+   "expect": {
+    "ok": true,
+    "warnings": [
+     "no_checksum"
+    ]
+   }
+  },
+  {
+   "name": "app id with a space",
+   "ops": [
+    {
+     "set": "appId",
+     "value": "Bad App"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "app id too short",
+   "ops": [
+    {
+     "set": "appId",
+     "value": "a"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "app id too long",
+   "ops": [
+    {
+     "set": "appId",
+     "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "app id is a number",
+   "ops": [
+    {
+     "set": "appId",
+     "value": 123
+    }
+   ],
+   "expect": {
+    "code": "bad_type"
+   }
+  },
+  {
+   "name": "app id missing",
+   "ops": [
+    {
+     "delete": "appId"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "opened in a different app",
+   "ops": [],
+   "expect": {
+    "code": "app_mismatch"
+   },
+   "expectApp": "other-app"
+  },
+  {
+   "name": "opened in the right app",
+   "ops": [],
+   "expect": {
+    "ok": true,
+    "warnings": []
+   },
+   "expectApp": "notes-demo"
+  },
+  {
+   "name": "packet id wrong prefix",
+   "ops": [
+    {
+     "set": "packetId",
+     "value": "xx_abcdefgh"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "packet id too short",
+   "ops": [
+    {
+     "set": "packetId",
+     "value": "pk_abc"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "revision id uppercase",
+   "ops": [
+    {
+     "set": "revisionId",
+     "value": "rv_BADBADBAD"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "parent null",
+   "ops": [
+    {
+     "set": "parentRevisionId",
+     "value": null
+    }
+   ],
+   "expect": {
+    "ok": true,
+    "warnings": [
+     "checksum_mismatch"
+    ]
+   }
+  },
+  {
+   "name": "parent invalid",
+   "ops": [
+    {
+     "set": "parentRevisionId",
+     "value": "nope"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "lineage empty is repaired",
+   "ops": [
+    {
+     "set": "lineage",
+     "value": []
+    }
+   ],
+   "expect": {
+    "ok": true,
+    "warnings": [
+     "checksum_mismatch"
+    ]
+   }
+  },
+  {
+   "name": "lineage not ending in the revision is repaired",
+   "ops": [
+    {
+     "set": "lineage",
+     "value": [
+      "rv_aaaaaaaa"
+     ]
+    }
+   ],
+   "expect": {
+    "ok": true,
+    "warnings": [
+     "checksum_mismatch"
+    ]
+   }
+  },
+  {
+   "name": "lineage entry invalid",
+   "ops": [
+    {
+     "set": "lineage",
+     "value": [
+      "bad"
+     ]
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "lineage is a string",
+   "ops": [
+    {
+     "set": "lineage",
+     "value": "x"
+    }
+   ],
+   "expect": {
+    "code": "bad_type"
+   }
+  },
+  {
+   "name": "lineage null",
+   "ops": [
+    {
+     "set": "lineage",
+     "value": null
+    }
+   ],
+   "expect": {
+    "ok": true,
+    "warnings": [
+     "checksum_mismatch"
+    ]
+   }
+  },
+  {
+   "name": "createdAt words",
+   "ops": [
+    {
+     "set": "createdAt",
+     "value": "yesterday"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "createdAt Feb 30",
+   "ops": [
+    {
+     "set": "createdAt",
+     "value": "2026-02-30T00:00:00Z"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "createdAt leap day",
+   "ops": [
+    {
+     "set": "createdAt",
+     "value": "2028-02-29T00:00:00Z"
+    }
+   ],
+   "expect": {
+    "ok": true,
+    "warnings": [
+     "checksum_mismatch"
+    ]
+   }
+  },
+  {
+   "name": "createdAt not a leap day",
+   "ops": [
+    {
+     "set": "createdAt",
+     "value": "2026-02-29T00:00:00Z"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "createdAt hour 24",
+   "ops": [
+    {
+     "set": "createdAt",
+     "value": "2026-10-29T24:00:00Z"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "createdAt date only",
+   "ops": [
+    {
+     "set": "createdAt",
+     "value": "2026-10-29"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "createdAt with offset",
+   "ops": [
+    {
+     "set": "createdAt",
+     "value": "2026-10-29T12:00:00+02:00"
+    }
+   ],
+   "expect": {
+    "ok": true,
+    "warnings": [
+     "checksum_mismatch"
+    ]
+   }
+  },
+  {
+   "name": "createdAt nanoseconds",
+   "ops": [
+    {
+     "set": "createdAt",
+     "value": "2026-10-29T12:00:00.123456789Z"
+    }
+   ],
+   "expect": {
+    "ok": true,
+    "warnings": [
+     "checksum_mismatch"
+    ]
+   }
+  },
+  {
+   "name": "createdAt second 60",
+   "ops": [
+    {
+     "set": "createdAt",
+     "value": "2026-10-29T12:00:60Z"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "createdAt lowercase t and z",
+   "ops": [
+    {
+     "set": "createdAt",
+     "value": "2026-10-29t12:00:00z"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "createdAt is a number",
+   "ops": [
+    {
+     "set": "createdAt",
+     "value": 123
+    }
+   ],
+   "expect": {
+    "code": "bad_type"
+   }
+  },
+  {
+   "name": "savedAt missing",
+   "ops": [
+    {
+     "delete": "savedAt"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "schema version 2",
+   "ops": [
+    {
+     "set": "schemaVersion",
+     "value": 2
+    }
+   ],
+   "expect": {
+    "code": "future_version"
+   }
+  },
+  {
+   "name": "schema version 0",
+   "ops": [
+    {
+     "set": "schemaVersion",
+     "value": 0
+    }
+   ],
+   "expect": {
+    "code": "bad_version"
+   }
+  },
+  {
+   "name": "schema version 1.5",
+   "ops": [
+    {
+     "set": "schemaVersion",
+     "value": 1.5
+    }
+   ],
+   "expect": {
+    "code": "bad_version"
+   }
+  },
+  {
+   "name": "schema version as a string",
+   "ops": [
+    {
+     "set": "schemaVersion",
+     "value": "1"
+    }
+   ],
+   "expect": {
+    "code": "bad_version"
+   }
+  },
+  {
+   "name": "other format",
+   "ops": [
+    {
+     "set": "format",
+     "value": "payout-packet"
+    }
+   ],
+   "expect": {
+    "code": "not_packet"
+   }
+  },
+  {
+   "name": "payload is an array",
+   "ops": [
+    {
+     "set": "payload",
+     "value": [
+      1
+     ]
+    }
+   ],
+   "expect": {
+    "code": "bad_payload"
+   }
+  },
+  {
+   "name": "payload is a string",
+   "ops": [
+    {
+     "set": "payload",
+     "value": "x"
+    }
+   ],
+   "expect": {
+    "code": "bad_payload"
+   }
+  },
+  {
+   "name": "payload null",
+   "ops": [
+    {
+     "set": "payload",
+     "value": null
+    }
+   ],
+   "expect": {
+    "code": "bad_payload"
+   }
+  },
+  {
+   "name": "payload missing",
+   "ops": [
+    {
+     "delete": "payload"
+    }
+   ],
+   "expect": {
+    "ok": true,
+    "warnings": [
+     "checksum_mismatch"
+    ]
+   }
+  },
+  {
+   "name": "payload nested 32 deep",
+   "ops": [
+    {
+     "set": "payload",
+     "value": {
+      "$deep": 32
+     }
+    }
+   ],
+   "expect": {
+    "ok": true,
+    "warnings": [
+     "checksum_mismatch"
+    ]
+   }
+  },
+  {
+   "name": "payload nested 33 deep",
+   "ops": [
+    {
+     "set": "payload",
+     "value": {
+      "$deep": 33
+     }
+    }
+   ],
+   "expect": {
+    "code": "bad_payload"
+   }
+  },
+  {
+   "name": "attestations is a string",
+   "ops": [
+    {
+     "set": "attestations",
+     "value": "x"
+    }
+   ],
+   "expect": {
+    "code": "bad_type"
+   }
+  },
+  {
+   "name": "nine attestations",
+   "ops": [
+    {
+     "repeat": "attestations.0",
+     "times": 9,
+     "into": "attestations"
+    }
+   ],
+   "expect": {
+    "code": "too_many"
+   }
+  },
+  {
+   "name": "eight attestations",
+   "ops": [
+    {
+     "repeat": "attestations.0",
+     "times": 8,
+     "into": "attestations"
+    }
+   ],
+   "expect": {
+    "ok": true,
+    "warnings": [
+     "checksum_mismatch"
+    ]
+   }
+  },
+  {
+   "name": "attestation unknown kind",
+   "ops": [
+    {
+     "set": "attestations.0.kind",
+     "value": "ssn"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "attestation unknown method",
+   "ops": [
+    {
+     "set": "attestations.0.method",
+     "value": "pigeon"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "attestation subject not a hash",
+   "ops": [
+    {
+     "set": "attestations.0.subject",
+     "value": "+15555550123"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "attestation expiry in words",
+   "ops": [
+    {
+     "set": "attestations.0.expiresAt",
+     "value": "tomorrow"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "attestation signature too short",
+   "ops": [
+    {
+     "set": "attestations.0.signature",
+     "value": "short"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "attestation without expiry",
+   "ops": [
+    {
+     "delete": "attestations.0.expiresAt"
+    }
+   ],
+   "expect": {
+    "ok": true,
+    "warnings": [
+     "checksum_mismatch"
+    ]
+   }
+  },
+  {
+   "name": "attestations null",
+   "ops": [
+    {
+     "set": "attestations",
+     "value": null
+    }
+   ],
+   "expect": {
+    "ok": true,
+    "warnings": [
+     "checksum_mismatch"
+    ]
+   }
+  },
+  {
+   "name": "unknown field is dropped",
+   "ops": [
+    {
+     "set": "evil",
+     "value": "<script>"
+    }
+   ],
+   "expect": {
+    "ok": true,
+    "warnings": [
+     "checksum_mismatch"
+    ]
+   }
+  },
+  {
+   "name": "appId in the wrong case",
+   "ops": [
+    {
+     "rename": "appId",
+     "to": "AppId"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "app.name in the wrong case",
+   "ops": [
+    {
+     "rename": "app.name",
+     "to": "Name"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "attestation kind in the wrong case",
+   "ops": [
+    {
+     "rename": "attestations.0.kind",
+     "to": "Kind"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "checksum alg in the wrong case",
+   "ops": [
+    {
+     "rename": "checksum.alg",
+     "to": "Alg"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "payload key case is the app's business",
+   "ops": [
+    {
+     "set": "payload.Theme",
+     "value": "x"
+    }
+   ],
+   "expect": {
+    "ok": true,
+    "warnings": [
+     "checksum_mismatch"
+    ]
+   }
+  },
+  {
+   "name": "name is a number",
+   "ops": [
+    {
+     "set": "name",
+     "value": 5
+    }
+   ],
+   "expect": {
+    "code": "bad_type"
+   }
+  },
+  {
+   "name": "name with control characters",
+   "ops": [
+    {
+     "set": "name",
+     "value": "a\u0001b"
+    }
+   ],
+   "expect": {
+    "ok": true,
+    "warnings": [
+     "checksum_mismatch"
+    ]
+   }
+  },
+  {
+   "name": "app is a string",
+   "ops": [
+    {
+     "set": "app",
+     "value": "x"
+    }
+   ],
+   "expect": {
+    "code": "bad_type"
+   }
+  },
+  {
+   "name": "origin valid",
+   "ops": [
+    {
+     "set": "origin",
+     "value": {
+      "packetId": "pk_abcdefgh",
+      "revisionId": "rv_abcdefgh",
+      "relation": "copy"
+     }
+    }
+   ],
+   "expect": {
+    "ok": true,
+    "warnings": [
+     "checksum_mismatch"
+    ]
+   }
+  },
+  {
+   "name": "origin invalid ids",
+   "ops": [
+    {
+     "set": "origin",
+     "value": {
+      "packetId": "nope",
+      "revisionId": "rv_abcdefgh"
+     }
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "origin is a string",
+   "ops": [
+    {
+     "set": "origin",
+     "value": "x"
+    }
+   ],
+   "expect": {
+    "code": "bad_type"
+   }
+  },
+  {
+   "name": "byte order mark is ignored",
+   "ops": [],
+   "expect": {
+    "ok": true,
+    "warnings": []
+   },
+   "bom": true
+  },
+  {
+   "name": "empty text",
+   "ops": [],
+   "expect": {
+    "code": "bad_json"
+   },
+   "raw": ""
+  },
+  {
+   "name": "not json",
+   "ops": [],
+   "expect": {
+    "code": "bad_json"
+   },
+   "raw": "nope"
+  },
+  {
+   "name": "a bare array",
+   "ops": [],
+   "expect": {
+    "code": "not_packet"
+   },
+   "raw": "[]"
+  },
+  {
+   "name": "a bare null",
+   "ops": [],
+   "expect": {
+    "code": "not_packet"
+   },
+   "raw": "null"
+  },
+  {
+   "name": "format only",
+   "ops": [],
+   "expect": {
+    "code": "bad_version"
+   },
+   "raw": "{\"format\":\"gold-packet\"}"
+  },
+  {
+   "name": "number out of range",
+   "ops": [],
+   "expect": {
+    "code": "bad_json"
+   },
+   "raw": "{\"format\":\"gold-packet\",\"schemaVersion\":1e999}"
+  },
+  {
+   "name": "duplicate keys: the last one wins",
+   "ops": [],
+   "expect": {
+    "code": "future_version"
+   },
+   "raw": "{\"format\":\"gold-packet\",\"schemaVersion\":1,\"schemaVersion\":2}"
+  },
+  {
+   "name": "extra AppId next to appId",
+   "ops": [
+    {
+     "set": "AppId",
+     "value": "notes-demo"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "extra PAYLOAD next to payload",
+   "ops": [
+    {
+     "set": "PAYLOAD",
+     "value": {}
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "extra app.Name next to app.name",
+   "ops": [
+    {
+     "set": "app.Name",
+     "value": "x"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "extra attestation Kind next to kind",
+   "ops": [
+    {
+     "set": "attestations.0.Kind",
+     "value": "email"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "extra checksum Alg next to alg",
+   "ops": [
+    {
+     "set": "checksum.Alg",
+     "value": "sha-256"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "extra origin.PacketId next to packetId",
+   "ops": [
+    {
+     "set": "origin",
+     "value": {
+      "packetId": "pk_abcdefgh",
+      "revisionId": "rv_abcdefgh",
+      "PacketId": "pk_abcdefgh"
+     }
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "app id with an uppercase letter",
+   "ops": [
+    {
+     "set": "appId",
+     "value": "Notes-Demo"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "app id with an underscore",
+   "ops": [
+    {
+     "set": "appId",
+     "value": "notes_demo"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "app id starting with a hyphen",
+   "ops": [
+    {
+     "set": "appId",
+     "value": "-notes"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "app id of 2 characters",
+   "ops": [
+    {
+     "set": "appId",
+     "value": "ab"
+    }
+   ],
+   "expect": {
+    "ok": true,
+    "warnings": [
+     "checksum_mismatch"
+    ]
+   }
+  },
+  {
+   "name": "app id of 40 characters",
+   "ops": [
+    {
+     "set": "appId",
+     "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+   ],
+   "expect": {
+    "ok": true,
+    "warnings": [
+     "checksum_mismatch"
+    ]
+   }
+  },
+  {
+   "name": "packet id with 32 characters",
+   "ops": [
+    {
+     "set": "packetId",
+     "value": "pk_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+   ],
+   "expect": {
+    "ok": true,
+    "warnings": [
+     "checksum_mismatch"
+    ]
+   }
+  },
+  {
+   "name": "packet id with 33 characters",
+   "ops": [
+    {
+     "set": "packetId",
+     "value": "pk_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "packet id with 8 characters",
+   "ops": [
+    {
+     "set": "packetId",
+     "value": "pk_aaaaaaaa"
+    }
+   ],
+   "expect": {
+    "ok": true,
+    "warnings": [
+     "checksum_mismatch"
+    ]
+   }
+  },
+  {
+   "name": "packet id with 7 characters",
+   "ops": [
+    {
+     "set": "packetId",
+     "value": "pk_aaaaaaa"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "revision id with a dash",
+   "ops": [
+    {
+     "set": "revisionId",
+     "value": "rv_abc-defgh"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "name of 81 characters is cut, not rejected",
+   "ops": [
+    {
+     "set": "name",
+     "value": "nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn"
+    }
+   ],
+   "expect": {
+    "ok": true,
+    "warnings": [
+     "checksum_mismatch"
+    ]
+   }
+  },
+  {
+   "name": "subject with uppercase hex",
+   "ops": [
+    {
+     "set": "attestations.0.subject",
+     "value": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "subject of 63 characters",
+   "ops": [
+    {
+     "set": "attestations.0.subject",
+     "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "key id with uppercase",
+   "ops": [
+    {
+     "set": "attestations.0.keyId",
+     "value": "Docs"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "signature with padding",
+   "ops": [
+    {
+     "set": "attestations.0.signature",
+     "value": "AAAAAAAAAAAAAAAAAAAA=="
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "signature of 15 characters",
+   "ops": [
+    {
+     "set": "attestations.0.signature",
+     "value": "AAAAAAAAAAAAAAA"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "attestation method passkey",
+   "ops": [
+    {
+     "set": "attestations.0.method",
+     "value": "passkey"
+    }
+   ],
+   "expect": {
+    "ok": true,
+    "warnings": [
+     "checksum_mismatch"
+    ]
+   }
+  },
+  {
+   "name": "attestation kind device",
+   "ops": [
+    {
+     "set": "attestations.0.kind",
+     "value": "device"
+    }
+   ],
+   "expect": {
+    "ok": true,
+    "warnings": [
+     "checksum_mismatch"
+    ]
+   }
+  },
+  {
+   "name": "app id starting with an uppercase letter",
+   "ops": [
+    {
+     "set": "appId",
+     "value": "Notes"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  },
+  {
+   "name": "app id with an uppercase letter after the first",
+   "ops": [
+    {
+     "set": "appId",
+     "value": "nOtes"
+    }
+   ],
+   "expect": {
+    "code": "bad_value"
+   }
+  }
+ ]
+}

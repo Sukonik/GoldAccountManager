@@ -197,6 +197,10 @@ main { padding: var(--bb-space-08) 0 var(--bb-space-11); }
 .bb-swatch i { display: block; height: 44px; border-bottom: 1px solid var(--bb-border-subtle); background: var(--c); }
 .bb-swatch span { display: block; padding: var(--bb-space-03); font-family: var(--bb-mono); overflow-wrap: anywhere; }
 .bb-has-copy { padding-top: var(--bb-space-09); }
+.bb-kv { display: grid; grid-template-columns: max-content 1fr; gap: var(--bb-space-02) var(--bb-space-05); margin: 0; }
+.bb-kv dt { color: var(--bb-text-secondary); font-weight: 600; }
+.bb-kv dd { margin: 0; overflow-wrap: anywhere; max-width: none; }
+@media (max-width: 480px) { .bb-kv { grid-template-columns: 1fr; gap: 0; } .bb-kv dd { margin-bottom: var(--bb-space-03); } }
 .bb-copy { position: absolute; top: var(--bb-space-03); right: var(--bb-space-03); min-height: 32px; padding: 0 var(--bb-space-03); font-size: .8rem; background: var(--bb-layer-2); color: var(--bb-text-primary); border-color: var(--bb-border); }
 
 /* narrow screens: brand and theme button on the first row, nav scrolls sideways on its own row */

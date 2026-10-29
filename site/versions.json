@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.2.0",
+    "name": "Browser reader and Try it",
+    "date": "2026-10-29",
+    "path": "v0.2/",
+    "summary": "A browser packet reader checked against the Go reader, the interactive Try it demo, every version on the home page, and one-command releases."
+  },
+  {
     "version": "0.1.0",
     "name": "Phase 0: Packets",
     "date": "2026-10-29",

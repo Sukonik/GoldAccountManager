@@ -23,10 +23,22 @@ go test -race ./...
 golangci-lint run ./...
 govulncheck ./...
 go run ./cmd/sitegen -check
+node --test site/tests/packet.test.mjs     # browser reader vs the shared Go cases
 ```
 
-If you changed anything under `site/`, rebuild the docs with `go run ./cmd/sitegen` and commit `docs/` too. CI fails when
-`docs/` is out of date.
+If you changed anything under `site/`, rebuild with `go run ./cmd/sitegen` and commit `docs/` and the README too. CI fails
+when either is out of date.
+
+## Two readers, one format
+
+`packet/` (Go) is the reference reader. `site/assets/gold-packet.js` is a second one for browsers. Both must give the same
+answer on every case in `packet/testdata/parity.json`. If you change a parsing rule, change **both** readers and add a case
+that only that rule can fail: the Go test is `packet/parity_test.go`, the JavaScript test is `site/tests/packet.test.mjs`.
+When you add a case, break the rule on purpose in each reader to confirm a test notices. Several early cases passed for the
+wrong reason, and this is how that was found.
+
+Before releasing a site version, also run the browser check by hand (needs Playwright):
+`go run ./cmd/sitegen && node site/tests/e2e-try.mjs`.
 
 ## Rules
 
@@ -39,6 +51,10 @@ If you changed anything under `site/`, rebuild the docs with `go run ./cmd/siteg
 
 ## Releasing a new site version
 
-1. Edit `site/VERSION` and add an entry to `site/versions.json`.
-2. Run `go run ./cmd/sitegen -snapshot vX.Y` to write the latest site and a preserved copy under `docs/vX.Y/`.
-3. Commit `docs/`. Preserved folders are never edited afterwards.
+```bash
+go run ./cmd/sitegen release -version 0.2.0 -name "Short name" -summary "One sentence."
+```
+
+This records the version, rebuilds the latest site, writes a preserved copy under `docs/v0.2/`, and regenerates the version
+and page tables in the README. Commit the result. Preserved folders are never edited afterwards, and the command refuses to
+overwrite one. You can also run it from GitHub (Actions, "Release site version"), which pushes a `release/vX.Y.Z` branch.

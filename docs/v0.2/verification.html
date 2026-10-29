@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Verification · GoldAccountManager</title>
+<meta name="description" content="The free-first verification ladder: confirm an email or phone with the cheapest method the user already has, then attest once.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/blue-bolt.css">
+<script src="assets/blue-bolt.js"></script>
+</head>
+<body>
+<a class="bb-skip" href="#main">Skip to content</a>
+<header class="bb-header">
+  <div class="bb-container bb-header__in">
+    <a class="bb-brand" href="index.html">
+      <span class="bb-brand__mark" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 32 32"><path d="M18.5 4 8 18h7l-1.5 10L24 14h-7z" fill="currentColor"/></svg></span>
+      GoldAccountManager
+    </a>
+    <nav class="bb-nav" aria-label="Main">
+      <a href="index.html">Home</a>
+      <a href="try.html">Try it</a>
+      <a href="packets.html">Packets</a>
+      <a href="verification.html" aria-current="page">Verification</a>
+      <a href="history.html">History</a>
+      <a href="blue-bolt.html">Blue Bolt UI</a>
+      <a href="roadmap.html">Roadmap</a>
+      
+    </nav>
+    <button type="button" class="bb-theme" data-bb-theme-toggle>Theme: auto</button>
+  </div>
+</header>
+<main id="main">
+  <div class="bb-container">
+
+<h1>Verification</h1>
+<p class="bb-lead bb-muted">Confirm an email or phone number for free when possible, and pay for an SMS only as a last resort.</p>
+
+<div class="bb-notice bb-notice--warn">
+  <strong>There is no free outbound SMS</strong>
+  <p>Carriers and providers charge for every code you send. So the approach is not a free-SMS trick. It is to avoid sending wherever possible. Carrier email-to-text gateways such as <code>number@txt.att.net</code> are reported shut down or unreliable, so we do not build on them.</p>
+</div>
+
+<h2>The ladder, cheapest first</h2>
+<p>An app offers whichever rungs the user already has, and can hide any rung. Free plans hide the paid SMS rung by default.</p>
+<div class="bb-scroll"><table>
+<thead><tr><th>Rung</th><th>How it confirms</th><th>Cost</th><th>Limits</th></tr></thead>
+<tbody>
+<tr><td>0. Verify later</td><td>The packet works with no confirmation. Ask only for recovery, sync or a paid feature.</td><td>$0</td><td>An unconfirmed packet cannot be recovered if lost.</td></tr>
+<tr><td>1. Google sign-in</td><td>A verified email from a Google ID token.</td><td>Free</td><td>Email only. Keep it detachable so Google cannot lock users out.</td></tr>
+<tr><td>2. Email the user sends</td><td>The user sends <em>us</em> a message with a one-time code. We send nothing.</td><td>$0 if inbound mail is free</td><td>Must check SPF, DKIM and DMARC on the inbound mail, or a From address can be spoofed. More friction than a link.</td></tr>
+<tr><td>2b. Email magic link</td><td>We email a link.</td><td>Free tiers have daily limits</td><td>Deliverability work on our side.</td></tr>
+<tr><td>3. Telegram contact share</td><td>A bot button returns the user's own number, which we check against their Telegram id.</td><td>Bot API reported free</td><td>Only for Telegram users. Trusts Telegram's own number check.</td></tr>
+<tr><td>4. WhatsApp, user first</td><td>The user messages our number first and replies within 24 hours are reported free.</td><td>Reported free, pricing may change</td><td>Needs a Meta business account.</td></tr>
+<tr><td>5. SMS code</td><td>We send a code.</td><td>Per message, varies by country</td><td>Off by default on free plans. Hard caps and a country allow-list.</td></tr>
+</tbody></table></div>
+<p class="bb-muted">Prices and free allowances were gathered from third-party sources and must be re-checked on each vendor's own page before any budget depends on them. Texting a code <em>to</em> our number is not recommended: it still needs a paid number, and the sender number on inbound texts can be spoofed.</p>
+
+<h2>Confirm once, attest forever</h2>
+<p>After any rung succeeds, the server signs a short attestation bound to <strong>one app and one packet</strong>. The packet carries it. Nothing needs to be sent again until the user recovers an account. Three properties matter:</p>
+<ul>
+  <li><strong>No address or number inside.</strong> The attestation's <code>subject</code> is an HMAC of the normalized email or phone under an app-specific secret. The same person in two apps gets two unrelated subjects. (Someone holding every key could still link them, so the privacy promise depends on trusting the operator.)</li>
+  <li><strong>Cannot be moved.</strong> The signature covers the app id and the packet id. An attestation copied onto another packet or into another app reports <code>bad-signature</code>.</li>
+  <li><strong>The method is signed.</strong> An app can require a passkey for one action and accept an email link for another, and a user cannot upgrade a claimed method by editing the file.</li>
+</ul>
+
+<h2>In Go</h2>
+<pre><code>// Server side: keep the signing key and the app secret private.
+signer, _ := verify.NewSigner("k1", privateKey)
+
+email, _ := verify.Normalize(packet.KindEmail, "Sam@Example.com")
+subject, _ := verify.Subject(appSecret, p.AppID, packet.KindEmail, email)
+att, _ := signer.Attest(
+    p.AppID, p.PacketID,
+    packet.KindEmail, packet.MethodEmailReply,
+    subject, now, now.AddDate(1, 0, 0),
+)
+p.Attestations = append(p.Attestations, att)
+
+// Later, any app with the public key can check it.
+checker := verify.NewChecker(map[string]ed25519.PublicKey{"k1": signer.PublicKey()})
+results := checker.Check(p, time.Now())
+if verify.Has(results, packet.KindEmail) {
+    // a valid, unexpired email confirmation
+}</code></pre>
+
+<h2>Channels</h2>
+<p>Anything that can prove control of an email or phone implements the small <code>verify.Channel</code> interface. Phase 0 ships <code>CodeChannel</code>, a demo channel that prints a six-digit code instead of sending one. Codes expire after 10 minutes, allow five tries and work once. Real channels (magic link, reply email, Telegram, SMS) come in later phases.</p>
+
+<h2>Rules that keep it cheap and safe</h2>
+<ol>
+  <li>Passkeys after the first confirmation, so later sign-ins send no codes.</li>
+  <li>The app chooses which rungs to show.</li>
+  <li>No single method is a lock: a user can add a second one later.</li>
+  <li>Rate limits on everything: per number, address, IP and app.</li>
+</ol>
+
+  </div>
+</main>
+<footer class="bb-footer">
+  <div class="bb-container">
+    <p>GoldAccountManager is open source under the <a href="https://github.com/Sukonik/GoldAccountManager/blob/main/LICENSE">Mozilla Public License 2.0</a>.
+    The UI is <a href="blue-bolt.html">Blue Bolt UI</a>. <a href="https://github.com/Sukonik/GoldAccountManager">Source on GitHub</a>.
+    Site version <a href="versions.html">0.2.0</a>.</p>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,49 @@
+name: Release site version
+
+# Publishes a new documentation site version: records it in site/versions.json,
+# rebuilds the latest site, writes a preserved copy under docs/vX.Y/ and updates
+# the README tables. The result is pushed to a release/vX.Y.Z branch for review.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "New version, like 0.2.0"
+        required: true
+      name:
+        description: "Short name of the release"
+        required: true
+      summary:
+        description: "One sentence on what it covers"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      # Inputs go through environment variables, never straight into the shell
+      # script, so a quote in the summary cannot inject commands.
+      - name: Build the release
+        env:
+          VERSION: ${{ inputs.version }}
+          NAME: ${{ inputs.name }}
+          SUMMARY: ${{ inputs.summary }}
+        run: go run ./cmd/sitegen release -version "$VERSION" -name "$NAME" -summary "$SUMMARY"
+      - name: Test
+        run: go test -race -count=1 ./...
+      - name: Push a release branch
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "release/v${VERSION}"
+          git add -A
+          git commit -m "Release site version ${VERSION}"
+          git push origin "release/v${VERSION}"

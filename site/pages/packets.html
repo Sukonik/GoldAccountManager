@@ -1,4 +1,4 @@
-<!--meta title="Packets" nav="Packets" order="2" desc="The Gold packet format: a plain JSON account file with identity, revision history, an app-defined payload, signed attestations and a checksum."-->
+<!--meta title="Packets" nav="Packets" icon="📦" order="3" desc="The Gold packet format: a plain JSON account file with identity, revision history, an app-defined payload, signed attestations and a checksum."-->
 <h1>Packets</h1>
 <p class="bb-lead bb-muted">A packet is one plain JSON file that is the user's account for one app. It holds the app's data, an identity, a revision history and any server-signed attestations.</p>
 
@@ -63,6 +63,9 @@ opened, warnings, err := packet.Parse(file, packet.ParseOptions{
     },
 })</code></pre>
 <p>The full API, with runnable examples, is in the package documentation: <code>go doc ./packet</code>. The same rules are written out in <a href="https://github.com/Sukonik/GoldAccountManager/blob/main/docs/packet-format.md">docs/packet-format.md</a>.</p>
+
+<h2>In the browser</h2>
+<p>A second reader written in JavaScript, <code>assets/gold-packet.js</code>, follows the same rules and runs the same shared test cases as the Go code (<code>packet/testdata/parity.json</code>). Those cases were checked by deliberately breaking each reader to make sure a test notices. You can use it on the <a href="try.html">Try it</a> page: make a packet, download it, and open it again. It does not verify attestation signatures.</p>
 
 <h2>Limits to know about</h2>
 <ul>

@@ -27,6 +27,16 @@ jobs:
       - name: Docs are up to date
         run: go run ./cmd/sitegen -check
 
+  js:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Browser packet reader agrees with the Go reader
+        run: node --test site/tests/packet.test.mjs
+
   lint:
     runs-on: ubuntu-latest
     steps:
