@@ -60,7 +60,7 @@ goldd serve --db accounts.db --addr :8080
 4. **Hardening and extras:** TOTP, passkeys, Postgres, OIDC, API keys
 5. **Release:** docs, Docker image, security review, `v0.1.0`
 
-Full detail, architecture, and open questions are in [PLAN.md](PLAN.md).
+Full detail, architecture, and open questions are in [PLAN.md](PLAN.md). The feature catalog, app presets (Work / Leisure / Utility), and links to the open-source projects we learn from (Keycloak, Ory Kratos, Zitadel, Casdoor, SuperTokens, Authentik) are in [FEATURES.md](FEATURES.md).
 
 ## Contributing
 

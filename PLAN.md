@@ -2,6 +2,8 @@
 
 **Goal:** a plug-and-play account management toolkit in Go. Drop it in for auth, profiles, roles, sessions, and admin tools. Self-host it or embed it. Dependency-light, forkable, and you own the data.
 
+**See also:** [FEATURES.md](FEATURES.md) for the feature catalog, app presets, and per-feature upstream references.
+
 **Status:** planning. Nothing is implemented yet. Everything below is a proposal to react to.
 
 ## Principles
